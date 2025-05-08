@@ -1,0 +1,9 @@
+aiosqlite
+alembic
+asyncpg
+fastapi
+flake8
+pytest
+requests
+sqlmodel
+uvicorn

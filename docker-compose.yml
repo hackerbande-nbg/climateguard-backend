@@ -1,0 +1,33 @@
+services:
+
+  web:
+    container_name: quantum_web_${QUANTUM_ENV}
+    build: ./project
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    volumes:
+      - ./project:/usr/src/app
+    ports:
+      - ${FASTAPI_PORT}:8000
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PW}@db:5432/${POSTGRES_DB}
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    container_name: quantum_db_${QUANTUM_ENV}
+    image: postgres:15.3
+    expose:
+      - 5432
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB}
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
