@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: quantum_server
+    runs-on: [self-hosted, quantum_server]
     concurrency:
       group: run_stage
       cancel-in-progress: true
