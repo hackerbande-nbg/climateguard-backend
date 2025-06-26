@@ -142,3 +142,18 @@ docker compose down; docker compose up --build -d; docker exec quantum_web_dev a
 alias quandeploy="docker compose down; docker compose up --build -d; docker exec quantum_web_dev alembic upgrade head; sleep 2;python3 -m pytest test/integration/; sleep 2; docker logs quantum_web_dev"
 
 alias quantest="python3 -m pytest test/integration/"
+
+# DB ops
+
+## list all DBs
+```bash
+docker exec -it quantum_db_prod bash
+psql -U postgres -c "\l"
+```
+
+## disconnect all users
+```bash
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'foo' AND pid <> pg_backend_pid();
+```

@@ -8,7 +8,7 @@ with open("config/test_config.json") as config_file:
     BASE_URL = config["base_url_stage"]
 
 # Initialize the HTTP client with retry logic
-http_client = HttpClient(retries=3, retry_on_status=[503])
+http_client = HttpClient(retries=3, retry_on_status=[500, 503])
 
 
 @pytest.fixture
