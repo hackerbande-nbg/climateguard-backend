@@ -27,6 +27,9 @@ jobs:
       - name: Write .env file
         run: echo "${{ secrets.QUANTUM_ENV_PROD }}" > .env
 
+      - name: Check environment variables
+        run: python3 devops/check_env_vars.py
+        
       - name: Build and Run Docker image
         run: |
           docker compose -p quantum_prod -f docker-compose.yml pull

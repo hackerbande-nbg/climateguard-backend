@@ -6,6 +6,6 @@
         "POSTGRES_PW",
         "POSTGRES_DB",
         "POSTGRES_DNS",
-        "DB_PORTs"
+        "DB_PORT"
     ]
 }
