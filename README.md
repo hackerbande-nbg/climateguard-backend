@@ -69,13 +69,25 @@ Quantum Telemetry is a FastAPI-based application designed to collect, store, and
 
 ## CICD
 
-via jenkins
-regular polling
+via github
 
 # Envs 
 
 All env vars are maintained in vaultwarden.
 https://vault.hackerban.de/
+
+The following variables are required(example from dev):
+```bash
+FASTAPI_PORT=8001
+QUANTUM_ENV=dev
+POSTGRES_USER=postgres
+POSTGRES_PW=postgres
+POSTGRES_DB=quantum
+POSTGRES_DNS=quantum_postgres
+DB_PORT=5432
+```
+
+the credentials and DB names have to be adjusted for stage and prod
 
 ## How to run on dev
 
