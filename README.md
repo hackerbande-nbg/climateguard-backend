@@ -74,6 +74,9 @@ regular polling
 
 # Envs 
 
+All env vars are maintained in vaultwarden.
+https://vault.hackerban.de/
+
 ## How to run on dev
 
 see also devops/dev_functions.sh

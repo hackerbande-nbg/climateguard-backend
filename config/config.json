@@ -1,0 +1,11 @@
+{
+    "required_env_vars": [
+        "FASTAPI_PORT",
+        "QUANTUM_ENV",
+        "POSTGRES_USER",
+        "POSTGRES_PW",
+        "POSTGRES_DB",
+        "POSTGRES_DNS",
+        "DB_PORT"
+    ]
+}
