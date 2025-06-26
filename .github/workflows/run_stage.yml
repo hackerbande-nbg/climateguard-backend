@@ -44,4 +44,4 @@ jobs:
       
       - name: Run prod tests
         run: |
-          python3 -m pytest test/integration
+          python3 -m pytest test/prod
