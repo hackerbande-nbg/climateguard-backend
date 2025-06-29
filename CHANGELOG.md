@@ -1,5 +1,6 @@
 # 2.0.0
 
+- add changelog at CHANGELOG.md
 - add API versioning via URLs (/v1 and /v2)
 - add max return limit for https://api.quantum.hackerban.de/v2/sensormetrics
 - add max return limit for https://api.quantum.hackerban.de/v1/sensormetrics
