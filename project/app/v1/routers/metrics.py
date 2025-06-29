@@ -10,7 +10,11 @@ router = APIRouter()
 
 @router.get("/sensormetrics", response_model=list[SensorMetric])
 async def get_sensormetrics(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(SensorMetric))
+    result = await session.execute(
+        select(SensorMetric)
+        .order_by(SensorMetric.timestamp_server.desc())
+        .limit(100)
+    )
     metrics = result.scalars().all()
     return [
         SensorMetric(

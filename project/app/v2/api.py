@@ -4,8 +4,9 @@ from app.v1.routers import metrics as v1_metrics
 from app.v2.routers import metrics as v2_metrics
 
 app = FastAPI(
-    title="climateguard-backend v1",
-    version="1.0.0",
+    title="climateguard-backend v2",
+    description="semiproduction of climateguard backend",
+    version="2.0.0",
     openapi_url="/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc"

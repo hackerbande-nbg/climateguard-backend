@@ -49,16 +49,17 @@ quandeploy() {
     print_checkmarks "DB migrations done"
 
     echo "⏱️ Waiting a moment for services to stabilize..."
-    echo "...."
-    sleep 0.4
-    echo "o..."
-    sleep 0.4
-    echo "oo.."
-    sleep 0.4
-    echo "ooo."
-    sleep 0.4
-    echo "oooo"
-    sleep 0.4
+    # Parameters
+    NUM_OS=${1:-20}         # num of  "o"s
+    DELAY=${2:-0.1}        # seconds between prints
+
+    progress=""
+    for ((i=1; i<=NUM_OS; i++)); do
+        progress+="⌛"
+        printf "\r%s" "$progress"
+        sleep $DELAY
+    done
+
     echo ""
     echo "🧪 Running tests..."
     python3 -m pytest || {

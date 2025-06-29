@@ -3,6 +3,10 @@
 # Overview
 Quantum Telemetry is a FastAPI-based application designed to collect, store, and retrieve sensor metrics. It uses PostgreSQL as the database and provides RESTful endpoints for interacting with the data.
 
+# Changelog
+
+Check out: [CHANGELOG.md](CHANGELOG.md)
+
 # Features
 - **/ping**: Health check endpoint to verify the service is running.
 - **/sensormetrics**: 
