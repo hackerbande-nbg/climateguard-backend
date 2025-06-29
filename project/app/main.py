@@ -8,7 +8,7 @@ from app.models import SensorMetric
 
 app = FastAPI(
     title="climateguard-backend",
-    description="hackerban.de's climateguard backend API",
+    description="hackerban.de's climateguard backend API :D",
     version="0.0.1",  # 👈 critical: OpenAPI version
     # 👈 expose OpenAPI schema at versioned endpoint
     openapi_url="/docs/openapi.json",

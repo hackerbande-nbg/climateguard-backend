@@ -49,8 +49,17 @@ quandeploy() {
     print_checkmarks "DB migrations done"
 
     echo "⏱️ Waiting a moment for services to stabilize..."
-    sleep 2
-
+    echo "...."
+    sleep 0.4
+    echo "o..."
+    sleep 0.4
+    echo "oo.."
+    sleep 0.4
+    echo "ooo."
+    sleep 0.4
+    echo "oooo"
+    sleep 0.4
+    echo ""
     echo "🧪 Running tests..."
     python3 -m pytest || {
         echo "❌ Some tests failed."

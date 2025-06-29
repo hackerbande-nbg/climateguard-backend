@@ -76,6 +76,9 @@ via github
 All env vars are maintained in vaultwarden.
 https://vault.hackerban.de/
 
+
+Prod api link: https://api.quantum.hackerban.de/docs/docs
+
 The following variables are required(example from dev):
 ```bash
 FASTAPI_PORT=8001
