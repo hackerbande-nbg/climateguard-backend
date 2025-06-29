@@ -3,5 +3,5 @@
         "http://localhost:8001/v1",
         "http://localhost:8001/v2"
     ],
-    "base_url_prod": "https://localhost:8000/v2"
+    "base_url_prod": "http://localhost:8000/v2"
 }
