@@ -4,3 +4,7 @@ __pycache__/
 
 # Ignore GitHub metadata/config
 .github/
+
+.venv/
+venv/
+env/

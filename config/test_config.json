@@ -1,3 +1,7 @@
 {
-    "base_url_stage": "http://localhost:8001"
+    "base_urls": [
+        "http://localhost:8001/v1",
+        "http://localhost:8001/v2"
+    ],
+    "base_url_prod": "https://localhost:8000/v2"
 }

@@ -6,7 +6,7 @@ import hashlib
 # Load the URL from config/test_config.json
 with open("config/test_config.json") as config_file:
     config = json.load(config_file)
-    BASE_URL = config["base_url_stage"]
+    BASE_URL = config["base_url_prod"]
 
 
 @pytest.fixture

@@ -74,5 +74,5 @@ quandeploy() {
 
     source .env
     echo "🚀 Deployment complete! You can now access the application."
-    echo "Visit http://localhost:$FASTAPI_PORT/docs/redoc in your browser."
+    echo "Visit http://localhost:$FASTAPI_PORT/v2/docs in your browser."
 }

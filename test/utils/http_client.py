@@ -4,13 +4,13 @@ from urllib3.util.retry import Retry
 
 
 class HttpClient:
-    def __init__(self, retries=3, retry_on_status=None):
+    def __init__(self, retries=6, retry_on_status=None):
         self.session = requests.Session()
         retry_strategy = Retry(
             total=retries,
             status_forcelist=retry_on_status or [503],
             allowed_methods=["GET", "POST", "PUT", "DELETE"],
-            backoff_factor=1
+            backoff_factor=0.3
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("http://", adapter)
