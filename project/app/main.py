@@ -6,7 +6,15 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.db import get_session
 from app.models import SensorMetric
 
-app = FastAPI()
+app = FastAPI(
+    title="climateguard-backend",
+    description="hackerban.de's climateguard backend API",
+    version="0.0.1",  # 👈 critical: OpenAPI version
+    # 👈 expose OpenAPI schema at versioned endpoint
+    openapi_url="/docs/openapi.json",
+    docs_url="/docs/docs",             # 👈 Swagger UI for v1
+    redoc_url="/docs/redoc"            # 👈 ReDoc UI (optional)
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,9 +25,10 @@ app.add_middleware(
         "http://api.quantum.hackerban.de"
     ],
     allow_credentials=True,
-    allow_methods=["*"], 
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/ping")
 async def pong():

@@ -1,0 +1,6 @@
+# Ignore Python cache directories
+__pycache__/
+**/__pycache__/
+
+# Ignore GitHub metadata/config
+.github/

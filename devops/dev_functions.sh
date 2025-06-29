@@ -62,4 +62,8 @@ quandeploy() {
     sleep 1;
 
     docker logs quantum_web_dev
+
+    source .env
+    echo "🚀 Deployment complete! You can now access the application."
+    echo "Visit http://localhost:$FASTAPI_PORT/docs/redoc in your browser."
 }
