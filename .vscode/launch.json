@@ -1,0 +1,55 @@
+{
+    // debugger configuration for FastAPI and pytest
+    // see readme.md for more information
+    "version": "0.2.1",
+    "configurations": [
+        {
+            "name": "Python Debugger: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--reload",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8001"
+            ],
+            "cwd": "${workspaceFolder}/project",
+            "env": {
+                "POSTGRES_USER": "postgres",
+                "POSTGRES_PW": "postgres",
+                "POSTGRES_DB": "quantum",
+                "POSTGRES_DNS": "localhost",
+                "DB_PORT": "5432",
+                "FASTAPI_PORT": "8001",
+                "QUANTUM_ENV": "dev",
+                "DATABASE_URL": "postgresql+asyncpg://postgres:postgres@localhost:5432/quantum"
+            },
+            "jinja": true
+        },
+        {
+            "name": "Python Debugger: Test Metrics",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "test/integration/test_metrics.py",
+                "-v"
+            ],
+            "env": {
+                "POSTGRES_USER": "postgres",
+                "POSTGRES_PW": "postgres",
+                "POSTGRES_DB": "quantum",
+                "POSTGRES_DNS": "localhost",
+                "DB_PORT": "5432",
+                "FASTAPI_PORT": "8001",
+                "QUANTUM_ENV": "dev",
+                "DATABASE_URL": "postgresql+asyncpg://postgres:postgres@localhost:5432/quantum"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}

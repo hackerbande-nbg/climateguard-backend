@@ -185,3 +185,28 @@ SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
 WHERE datname = 'foo' AND pid <> pg_backend_pid();
 ```
+
+# Debugging
+
+For local development and debugging in VS Code, check the launch.json and the .env file given as examples
+Process for local debugging:
+
+1. **Start PostgreSQL database first**:
+   ```bash
+   # Run only the database container
+   docker-compose up db -d
+   ```
+
+2. **Debug FastAPI application**:
+   - In VS Code, go to Run and Debug (Ctrl+Shift+D)
+   - Select "Python Debugger: FastAPI" 
+   - Start debugging (F5)
+   - This will start the FastAPI server on http://localhost:8001
+
+3. **Debug integration tests**:
+   - While FastAPI is running in debug mode
+   - Select "Python Debugger: Test Metrics" configuration
+   - Start the second debugger (F5)
+   - This will run the integration tests against the local FastAPI instance
+
+**Note**: Make sure the database is running on localhost:5432 before starting the debuggers. The launch configurations are set up with the necessary environment variables for local development.

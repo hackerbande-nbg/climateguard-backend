@@ -98,17 +98,52 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=16172
 curl -X GET "http://localhost:8001/v2/metrics?min_date=2021-03-31T00:00:00Z&max_date=2021-04-01T00:00:00Z"
 ```
 
-#### Combined filters
+#### With pagination (when >200 total entries)
 ```bash
-curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=1617271200&limit=25"
+curl -X GET "http://localhost:8001/v2/metrics?page=1&limit=50"
+```
+
+#### Second page
+```bash
+curl -X GET "http://localhost:8001/v2/metrics?page=2&limit=50"
+```
+
+#### Combined filters with pagination
+```bash
+curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=1617271200&limit=25&page=1"
 ```
 
 **Query Parameters:**
 - `min_date` (optional): Minimum date filter (Unix timestamp or ISO string)
 - `max_date` (optional): Maximum date filter (Unix timestamp or ISO string)
 - `limit` (optional): Number of records to return (default: 100, max: 1000)
+- `page` (optional): Page number for pagination (default: 1, starts from 1)
 
-**Response:**
+**Response (when >200 total entries):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "device_id": "sensor_001",
+      "timestamp_device": 1617184800,
+      "timestamp_server": 1617184805,
+      "temperature": 22.5,
+      "humidity": 45.0
+    }
+  ],
+  "pagination": {
+    "total_count": 250,
+    "page": 1,
+    "limit": 50,
+    "total_pages": 5,
+    "has_next": true,
+    "has_prev": false
+  }
+}
+```
+
+**Response (when ≤200 total entries):**
 ```json
 [
   {
@@ -118,14 +153,6 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=16172
     "timestamp_server": 1617184805,
     "temperature": 22.5,
     "humidity": 45.0
-  },
-  {
-    "id": 2,
-    "device_id": "sensor_002",
-    "timestamp_device": 1617184900,
-    "timestamp_server": 1617184905,
-    "temperature": 23.1,
-    "humidity": 47.2
   }
 ]
 ```

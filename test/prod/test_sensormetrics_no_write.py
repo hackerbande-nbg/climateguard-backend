@@ -63,3 +63,30 @@ def test_get_metrics_invalid_date():
     """Test /metrics endpoint with invalid date format"""
     response = requests.get(f"{BASE_URL}/metrics?min_date=invalid-date")
     assert response.status_code == 400
+
+
+def test_get_metrics_pagination():
+    """Test /metrics endpoint pagination"""
+    response = requests.get(f"{BASE_URL}/metrics?limit=10&page=1")
+    assert response.status_code == 200
+
+    data = response.json()
+    # Should work regardless of whether pagination is triggered
+    if isinstance(data, dict) and "pagination" in data:
+        assert "data" in data
+        assert isinstance(data["data"], list)
+    else:
+        assert isinstance(data, list)
+
+
+def test_get_metrics_pagination_with_filters():
+    """Test /metrics endpoint pagination with date filters"""
+    response = requests.get(
+        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=5&page=1")
+    assert response.status_code == 200
+
+    data = response.json()
+    if isinstance(data, dict) and "pagination" in data:
+        assert len(data["data"]) <= 5
+    else:
+        assert isinstance(data, list)
