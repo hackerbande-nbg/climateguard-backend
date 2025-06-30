@@ -17,7 +17,7 @@ def test_get_metrics_no_filters(base_url):
     """Test /metrics endpoint without any filters"""
     response = http_client.get(f"{base_url}/metrics")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert isinstance(response.json(), dict)
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -26,7 +26,7 @@ def test_get_metrics_with_limit(base_url):
     response = http_client.get(f"{base_url}/metrics?limit=5")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
+    assert isinstance(data, dict)
     assert len(data) <= 5
 
 
