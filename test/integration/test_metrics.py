@@ -77,7 +77,7 @@ def test_get_metrics_pagination_structure(base_url):
     assert response.status_code == 200
 
     data = response.json()
-    
+
     # Always expect dict structure
     assert isinstance(data, dict)
     assert "data" in data
@@ -92,6 +92,7 @@ def test_get_metrics_pagination_structure(base_url):
     assert "total_pages" in pagination
     assert "has_next" in pagination
     assert "has_prev" in pagination
+
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_navigation(base_url):
@@ -126,7 +127,7 @@ def test_get_metrics_pagination_invalid_page(base_url):
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_high_page_number(base_url):
     """Test /metrics endpoint with very high page number"""
-    response = http_client.get(f"{base_url}/metrics?page=9999&limit=10")
+    response = http_client.get(f"{base_url}/metrics?page=99999999&limit=10")
     assert response.status_code == 200
 
     data = response.json()
