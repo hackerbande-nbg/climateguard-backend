@@ -1,9 +1,10 @@
 # 2.1.0
 
 - add /metrics endpoint with date filtering and limits
-- add pagination to /metrics endpoint when more than 200 entries exist
+- add pagination to /metrics endpoint when more than LIMIT entries exist
 - add comprehensive pagination tests and integration tests
 - add README-example-calls.md for some curl examples
+- add .env file and example launch.json
 
 # 2.0.0
 
