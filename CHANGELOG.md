@@ -1,3 +1,8 @@
+# 2.1.0
+
+- add /metrics endpoint with date filtering and limits
+- add README-example-calls.md for some curl examples
+
 # 2.0.0
 
 - add changelog at CHANGELOG.md

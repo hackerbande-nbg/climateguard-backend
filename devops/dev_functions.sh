@@ -74,6 +74,9 @@ quandeploy() {
     docker logs quantum_web_dev
 
     source .env
+
+    echo ""
     echo "🚀 Deployment complete! You can now access the application."
     echo "Visit http://localhost:$FASTAPI_PORT/v2/docs in your browser."
+    echo ""
 }

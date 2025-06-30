@@ -12,6 +12,8 @@ Check out: [CHANGELOG.md](CHANGELOG.md)
 - **/sensormetrics**: 
   - `GET`: Retrieve all sensor metrics.
   - `POST`: Add a new sensor metric.
+- **/metrics**: 
+  - `GET`: Retrieve sensor metrics with optional date filtering and pagination.
 
 # Project Structure
 - **project/app**: Contains the FastAPI application code.
@@ -54,7 +56,11 @@ Check out: [CHANGELOG.md](CHANGELOG.md)
 
 # Endpoints
 - **GET /ping**: Returns `{"ping": "pong!"}`.
-- **GET /sensormetrics**: Retrieves all sensor metrics.
+- **GET /sensormetrics**: Retrieves latest 100 sensor metrics.
+- **GET /metrics**: Retrieves sensor metrics with optional filtering:
+  - `min_date`: Minimum date filter (Unix timestamp or ISO string)
+  - `max_date`: Maximum date filter (Unix timestamp or ISO string)  
+  - `limit`: Number of records to return (default: 100, max: 1000)
 - **POST /sensormetrics**: Adds a new sensor metric. Example payload:
   ```json
   {

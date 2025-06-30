@@ -42,3 +42,24 @@ def test_post_sensormetric_with_wrong_temperature(sensormetric_payload):
         headers={"Content-Type": "application/json"}
     )
     assert response.status_code == 422  # Unprocessable Entity
+
+
+def test_get_metrics():
+    """Test /metrics endpoint"""
+    response = requests.get(f"{BASE_URL}/metrics")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_get_metrics_with_filters():
+    """Test /metrics endpoint with date filters"""
+    response = requests.get(
+        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=10")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_get_metrics_invalid_date():
+    """Test /metrics endpoint with invalid date format"""
+    response = requests.get(f"{BASE_URL}/metrics?min_date=invalid-date")
+    assert response.status_code == 400
