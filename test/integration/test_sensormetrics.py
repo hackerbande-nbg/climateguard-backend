@@ -5,7 +5,7 @@ from test.utils.http_client import HttpClient  # Updated import path
 # Load the URL from config/test_config.json
 with open("config/test_config.json") as config_file:
     config = json.load(config_file)
-    BASE_URLS = config["base_urls"]
+    BASE_URLS = config["base_urls_v1"]
 
 # Initialize the HTTP client with retry logic and exponential backoff
 http_client = HttpClient(retries=3, retry_on_status=[

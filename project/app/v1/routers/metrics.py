@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 
@@ -33,6 +33,21 @@ async def get_sensormetrics(session: AsyncSession = Depends(get_session)):
 async def add_sensormetric(
     metric: SensorMetric, session: AsyncSession = Depends(get_session)
 ):
+
+    # Validate temperature is a number
+    if not isinstance(metric.temperature, (int, float)):
+        raise HTTPException(
+            status_code=422,
+            detail="Temperature must be a number, not a string"
+        )
+
+    # Validate humidity is a number
+    if not isinstance(metric.humidity, (int, float)):
+        raise HTTPException(
+            status_code=422,
+            detail="Humidity must be a number, not a string"
+        )
+
     metric = SensorMetric(
         device_id=metric.device_id,
         timestamp_device=metric.timestamp_device,

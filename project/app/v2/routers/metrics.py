@@ -111,37 +111,3 @@ async def get_metrics(
         result = await session.execute(data_query)
         metrics = result.scalars().all()
         return metrics
-
-
-@router.get("/sensormetrics", response_model=list[SensorMetric])
-async def get_sensormetrics(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(SensorMetric))
-    metrics = result.scalars().all()
-    return [
-        SensorMetric(
-            id=metric.id,
-            device_id=metric.device_id,
-            timestamp_device=metric.timestamp_device,
-            timestamp_server=metric.timestamp_server,
-            temperature=metric.temperature,
-            humidity=metric.humidity,
-        )
-        for metric in metrics
-    ]
-
-
-@router.post("/sensormetrics")
-async def add_sensormetric(
-    metric: SensorMetric, session: AsyncSession = Depends(get_session)
-):
-    metric = SensorMetric(
-        device_id=metric.device_id,
-        timestamp_device=metric.timestamp_device,
-        timestamp_server=metric.timestamp_server,
-        temperature=metric.temperature,
-        humidity=metric.humidity,
-    )
-    session.add(metric)
-    await session.commit()
-    await session.refresh(metric)
-    return metric

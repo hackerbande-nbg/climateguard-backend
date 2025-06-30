@@ -35,7 +35,7 @@
             "request": "launch",
             "module": "pytest",
             "args": [
-                "test/integration/test_metrics.py",
+                "test/integration/",
                 "-v"
             ],
             "env": {
