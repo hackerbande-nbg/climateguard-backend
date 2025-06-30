@@ -6,5 +6,5 @@
     "base_urls_v2": [
         "http://localhost:8001/v2"
     ],
-    "base_url_prod": "http://localhost:8000/v2"
+    "base_url_prod": "https://api.quantum.hackerban.de/v2"
 }

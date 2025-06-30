@@ -50,6 +50,18 @@
             },
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Test Prod",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "test/prod/",
+                "-v"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }
