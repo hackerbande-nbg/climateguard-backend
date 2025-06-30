@@ -48,7 +48,11 @@ def test_get_metrics():
     """Test /metrics endpoint"""
     response = requests.get(f"{BASE_URL}/metrics")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
+    assert isinstance(data["data"], list)
 
 
 def test_get_metrics_with_filters():
@@ -56,7 +60,10 @@ def test_get_metrics_with_filters():
     response = requests.get(
         f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=10")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert isinstance(data["data"], list)
 
 
 def test_get_metrics_invalid_date():
@@ -71,12 +78,10 @@ def test_get_metrics_pagination():
     assert response.status_code == 200
 
     data = response.json()
-    # Should work regardless of whether pagination is triggered
-    if isinstance(data, dict) and "pagination" in data:
-        assert "data" in data
-        assert isinstance(data["data"], list)
-    else:
-        assert isinstance(data, list)
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
+    assert isinstance(data["data"], list)
 
 
 def test_get_metrics_pagination_with_filters():
@@ -86,7 +91,6 @@ def test_get_metrics_pagination_with_filters():
     assert response.status_code == 200
 
     data = response.json()
-    if isinstance(data, dict) and "pagination" in data:
-        assert len(data["data"]) <= 5
-    else:
-        assert isinstance(data, list)
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert len(data["data"]) <= 5

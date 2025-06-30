@@ -104,10 +104,22 @@ async def get_metrics(
             }
         )
     else:
-        # No pagination needed, return simple list
+        # No pagination needed, but return same structure
         if limit and limit > 0:
             data_query = data_query.limit(limit)
 
         result = await session.execute(data_query)
         metrics = result.scalars().all()
-        return metrics
+
+        # Return consistent structure even without pagination
+        return PaginatedMetricsResponse(
+            data=metrics,
+            pagination={
+                "total_count": total_count,
+                "page": 1,
+                "limit": len(metrics),
+                "total_pages": 1,
+                "has_next": False,
+                "has_prev": False
+            }
+        )

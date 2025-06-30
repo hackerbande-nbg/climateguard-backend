@@ -17,7 +17,11 @@ def test_get_metrics_no_filters(base_url):
     """Test /metrics endpoint without any filters"""
     response = http_client.get(f"{base_url}/metrics")
     assert response.status_code == 200
-    assert isinstance(response.json(), dict)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
+    assert isinstance(data["data"], list)
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -27,7 +31,8 @@ def test_get_metrics_with_limit(base_url):
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
-    assert len(data) <= 5
+    assert "data" in data
+    assert len(data["data"]) <= 5
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -38,7 +43,10 @@ def test_get_metrics_with_unix_timestamps(base_url):
     response = http_client.get(
         f"{base_url}/metrics?min_date={min_date}&max_date={max_date}")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -49,7 +57,10 @@ def test_get_metrics_with_iso_dates(base_url):
     response = http_client.get(
         f"{base_url}/metrics?min_date={min_date}&max_date={max_date}")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -62,35 +73,25 @@ def test_get_metrics_invalid_date_format(base_url):
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_structure(base_url):
     """Test /metrics endpoint pagination response structure when pagination is triggered"""
-    # First, post enough metrics to trigger pagination (need >200 entries)
-    # This test assumes the create_test_metrics.py script has been run to create 150+ entries
     response = http_client.get(f"{base_url}/metrics?limit=10&page=1")
     assert response.status_code == 200
 
     data = response.json()
+    
+    # Always expect dict structure
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) <= 10
 
-    # Check if we got pagination response (when >200 total entries) or simple list
-    if isinstance(data, dict) and "pagination" in data:
-        # Paginated response
-        assert "data" in data
-        assert "pagination" in data
-        assert isinstance(data["data"], list)
-        assert len(data["data"]) <= 10
-
-        pagination = data["pagination"]
-        assert "total_count" in pagination
-        assert "page" in pagination
-        assert "limit" in pagination
-        assert "total_pages" in pagination
-        assert "has_next" in pagination
-        assert "has_prev" in pagination
-        assert pagination["page"] == 1
-        assert pagination["limit"] == 10
-        assert pagination["has_prev"] == False
-    else:
-        # Simple list response (<=200 total entries)
-        assert isinstance(data, list)
-
+    pagination = data["pagination"]
+    assert "total_count" in pagination
+    assert "page" in pagination
+    assert "limit" in pagination
+    assert "total_pages" in pagination
+    assert "has_next" in pagination
+    assert "has_prev" in pagination
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_navigation(base_url):
@@ -129,9 +130,8 @@ def test_get_metrics_pagination_high_page_number(base_url):
     assert response.status_code == 200
 
     data = response.json()
-    if isinstance(data, dict) and "pagination" in data:
-        # Should return empty data for page beyond available data
-        assert len(data["data"]) == 0
-    else:
-        # If not paginated, should return empty list
-        assert isinstance(data, list)
+    assert isinstance(data, dict)
+    assert "data" in data
+    assert "pagination" in data
+    # Should return empty data for page beyond available data
+    assert len(data["data"]) == 0
