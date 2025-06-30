@@ -47,7 +47,7 @@ async def get_metrics(
     max_date: Optional[str] = Query(
         None, description="Maximum date filter (Unix timestamp or ISO string)"),
     limit: Optional[int] = Query(
-        100, ge=1, le=1000, description="Number of records to return (max 1000)"),
+        100, ge=1, description="Number of records to return"),
     page: Optional[int] = Query(
         1, ge=1, description="Page number for pagination (starts from 1)"),
     session: AsyncSession = Depends(get_session)
