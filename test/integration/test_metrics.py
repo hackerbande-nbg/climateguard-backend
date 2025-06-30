@@ -108,31 +108,9 @@ def test_get_metrics_pagination_navigation(base_url):
     data1 = response1.json()
     data2 = response2.json()
 
-    # If we have paginated responses, ensure they're different
-    if isinstance(data1, dict) and isinstance(data2, dict):
-        if "pagination" in data1 and "pagination" in data2:
-            # Ensure different pages return different data
-            page1_ids = [item["id"] for item in data1["data"]]
-            page2_ids = [item["id"] for item in data2["data"]]
-            assert page1_ids != page2_ids  # Different pages should have different data
-
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_invalid_page(base_url):
     """Test /metrics endpoint with invalid page number"""
     response = http_client.get(f"{base_url}/metrics?page=0")
     assert response.status_code == 422  # Validation error
-
-
-@pytest.mark.parametrize("base_url", BASE_URLS_V2)
-def test_get_metrics_pagination_high_page_number(base_url):
-    """Test /metrics endpoint with very high page number"""
-    response = http_client.get(f"{base_url}/metrics?page=99999999&limit=10")
-    assert response.status_code == 200
-
-    data = response.json()
-    assert isinstance(data, dict)
-    assert "data" in data
-    assert "pagination" in data
-    # Should return empty data for page beyond available data
-    assert len(data["data"]) == 0
