@@ -47,7 +47,7 @@ async def get_metrics(
     max_date: Optional[str] = Query(
         None, description="Maximum date filter (Unix timestamp or ISO string)"),
     limit: Optional[int] = Query(
-        100, ge=1, description="Number of records to return"),
+        100, ge=1, description="Number of records to return per page"),
     page: Optional[int] = Query(
         1, ge=1, description="Page number for pagination (starts from 1)"),
     session: AsyncSession = Depends(get_session)
@@ -79,7 +79,7 @@ async def get_metrics(
     total_count = total_result.scalar()
 
     # Check if pagination is needed (more than 200 entries)
-    if total_count > 200:
+    if total_count > limit:
         # Calculate pagination
         offset = (page - 1) * limit
         total_pages = (total_count + limit - 1) // limit  # Ceiling division
