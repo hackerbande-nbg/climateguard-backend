@@ -31,7 +31,7 @@ def test_post_metric_with_wrong_temperature(metric_payload):
     metric_payload.update({"temperature": "a"})
     # Post the metric
     response = requests.post(
-        f"{BASE_URL}/v2/metrics",
+        f"{BASE_URL}/metrics",
         json=metric_payload,
         headers={"Content-Type": "application/json"}
     )
@@ -43,7 +43,7 @@ def test_post_metric_with_nonexistent_device(metric_payload):
     metric_payload.update({"device_name": "nonexistent_device"})
     # Post the metric
     response = requests.post(
-        f"{BASE_URL}/v2/metrics",
+        f"{BASE_URL}/metrics",
         json=metric_payload,
         headers={"Content-Type": "application/json"}
     )
@@ -52,7 +52,7 @@ def test_post_metric_with_nonexistent_device(metric_payload):
 
 def test_get_metrics():
     """Test /metrics endpoint"""
-    response = requests.get(f"{BASE_URL}/v2/metrics")
+    response = requests.get(f"{BASE_URL}/metrics")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -64,7 +64,7 @@ def test_get_metrics():
 def test_get_metrics_with_filters():
     """Test /metrics endpoint with date filters"""
     response = requests.get(
-        f"{BASE_URL}/v2/metrics?min_date=1617184800&max_date=1617271200&limit=10")
+        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=10")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -74,13 +74,13 @@ def test_get_metrics_with_filters():
 
 def test_get_metrics_invalid_date():
     """Test /metrics endpoint with invalid date format"""
-    response = requests.get(f"{BASE_URL}/v2/metrics?min_date=invalid-date")
+    response = requests.get(f"{BASE_URL}/metrics?min_date=invalid-date")
     assert response.status_code == 400
 
 
 def test_get_metrics_pagination():
     """Test /metrics endpoint pagination"""
-    response = requests.get(f"{BASE_URL}/v2/metrics?limit=10&page=1")
+    response = requests.get(f"{BASE_URL}/metrics?limit=10&page=1")
     assert response.status_code == 200
 
     data = response.json()
@@ -93,7 +93,7 @@ def test_get_metrics_pagination():
 def test_get_metrics_pagination_with_filters():
     """Test /metrics endpoint pagination with date filters"""
     response = requests.get(
-        f"{BASE_URL}/v2/metrics?min_date=1617184800&max_date=1617271200&limit=5&page=1")
+        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=5&page=1")
     assert response.status_code == 200
 
     data = response.json()
