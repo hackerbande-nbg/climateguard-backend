@@ -10,20 +10,14 @@ with open("config/test_config.json") as config_file:
 
 
 @pytest.fixture
-def sensormetric_payload():
+def metric_payload():
     return {
+        "device_name": "lora_test_1",
         "timestamp_device": 1617184800,
         "timestamp_server": 1617184800,
-        "device_id": "lora_test_1",
         "temperature": 22.5,
         "humidity": 45.0,
     }
-
-
-def test_get_sensormetrics():
-    response = requests.get(f"{BASE_URL}/sensormetrics")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
 
 
 def test_ping():
@@ -32,21 +26,33 @@ def test_ping():
     assert response.json() == {"ping": "pong!"}
 
 
-def test_post_sensormetric_with_wrong_temperature(sensormetric_payload):
-    # add device_id from payload
-    sensormetric_payload.update({"temperature": "a"})
-    # Post the sensormetric
+def test_post_metric_with_wrong_temperature(metric_payload):
+    # Update with invalid temperature
+    metric_payload.update({"temperature": "a"})
+    # Post the metric
     response = requests.post(
-        f"{BASE_URL}/sensormetrics",
-        json=sensormetric_payload,
+        f"{BASE_URL}/v2/metrics",
+        json=metric_payload,
         headers={"Content-Type": "application/json"}
     )
     assert response.status_code == 422  # Unprocessable Entity
 
 
+def test_post_metric_with_nonexistent_device(metric_payload):
+    # Update with nonexistent device
+    metric_payload.update({"device_name": "nonexistent_device"})
+    # Post the metric
+    response = requests.post(
+        f"{BASE_URL}/v2/metrics",
+        json=metric_payload,
+        headers={"Content-Type": "application/json"}
+    )
+    assert response.status_code == 404  # Device not found
+
+
 def test_get_metrics():
     """Test /metrics endpoint"""
-    response = requests.get(f"{BASE_URL}/metrics")
+    response = requests.get(f"{BASE_URL}/v2/metrics")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -58,7 +64,7 @@ def test_get_metrics():
 def test_get_metrics_with_filters():
     """Test /metrics endpoint with date filters"""
     response = requests.get(
-        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=10")
+        f"{BASE_URL}/v2/metrics?min_date=1617184800&max_date=1617271200&limit=10")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -68,13 +74,13 @@ def test_get_metrics_with_filters():
 
 def test_get_metrics_invalid_date():
     """Test /metrics endpoint with invalid date format"""
-    response = requests.get(f"{BASE_URL}/metrics?min_date=invalid-date")
+    response = requests.get(f"{BASE_URL}/v2/metrics?min_date=invalid-date")
     assert response.status_code == 400
 
 
 def test_get_metrics_pagination():
     """Test /metrics endpoint pagination"""
-    response = requests.get(f"{BASE_URL}/metrics?limit=10&page=1")
+    response = requests.get(f"{BASE_URL}/v2/metrics?limit=10&page=1")
     assert response.status_code == 200
 
     data = response.json()
@@ -87,7 +93,7 @@ def test_get_metrics_pagination():
 def test_get_metrics_pagination_with_filters():
     """Test /metrics endpoint pagination with date filters"""
     response = requests.get(
-        f"{BASE_URL}/metrics?min_date=1617184800&max_date=1617271200&limit=5&page=1")
+        f"{BASE_URL}/v2/metrics?min_date=1617184800&max_date=1617271200&limit=5&page=1")
     assert response.status_code == 200
 
     data = response.json()
