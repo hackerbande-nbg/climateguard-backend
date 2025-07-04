@@ -12,7 +12,7 @@ with open("config/test_config.json") as config_file:
 @pytest.fixture
 def metric_payload():
     return {
-        "device_name": "lora_test_1",
+        "device_name": "andis-sensor-an-heltech",
         "timestamp_device": 1617184800,
         "timestamp_server": 1617184800,
         "temperature": 22.5,
