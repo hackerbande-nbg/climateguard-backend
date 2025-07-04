@@ -6,7 +6,7 @@ from typing import List, Dict
 
 # Configuration
 API_BASE_URL = "http://localhost:8001/v2"
-METRICS_ENDPOINT = f"{API_BASE_URL}/sensormetrics"
+METRICS_ENDPOINT = f"{API_BASE_URL}/metrics"
 NUM_ENTRIES = 150
 
 
@@ -24,8 +24,8 @@ def generate_sensor_metrics() -> List[Dict]:
             timedelta(seconds=random.randint(0, 30))  # Small server delay
 
         metric = {
-            # 10 different sensors
-            "device_id": f"sensor_{random.randint(1, 10):03d}",
+            # 10 different sensors with device names
+            "device_name": f"sensor_{random.randint(1, 10):03d}",
             "timestamp_device": int(device_timestamp.timestamp()),
             "timestamp_server": int(server_timestamp.timestamp()),
             "temperature": round(random.uniform(15.0, 35.0), 2),  # 15-35°C
@@ -43,21 +43,47 @@ async def post_metric(session: aiohttp.ClientSession, metric: Dict) -> bool:
             if response.status == 200:
                 return True
             else:
-                print(f"Failed to post metric: {response.status}")
+                print(f"Failed to post metric: {response.status} - {await response.text()}")
                 return False
     except Exception as e:
         print(f"Error posting metric: {e}")
         return False
 
 
-async def main():
-    """Main function to create and post test metrics"""
-    print(f"Generating {NUM_ENTRIES} test sensor metrics...")
-    metrics = generate_sensor_metrics()
+async def create_devices(session: aiohttp.ClientSession) -> bool:
+    """Create test devices first"""
+    devices_endpoint = f"{API_BASE_URL}/devices"
 
-    print(f"Posting metrics to {METRICS_ENDPOINT}...")
+    for i in range(1, 11):
+        device = {
+            "name": f"sensor_{i:03d}",
+            "latitude": round(random.uniform(45.0, 47.0), 6),
+            "longitude": round(random.uniform(7.0, 10.0), 6)
+        }
+
+        try:
+            async with session.post(devices_endpoint, json=device) as response:
+                if response.status not in [200, 201]:
+                    print(
+                        f"Failed to create device {device['name']}: {response.status}")
+        except Exception as e:
+            print(f"Error creating device {device['name']}: {e}")
+
+    return True
+
+
+async def main():
+    """Main function to create devices and post test metrics"""
+    print("Creating test devices...")
 
     async with aiohttp.ClientSession() as session:
+        await create_devices(session)
+
+        print(f"Generating {NUM_ENTRIES} test sensor metrics...")
+        metrics = generate_sensor_metrics()
+
+        print(f"Posting metrics to {METRICS_ENDPOINT}...")
+
         success_count = 0
 
         for i, metric in enumerate(metrics, 1):

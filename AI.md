@@ -1,91 +1,71 @@
-# AI Planning Document
+# Database Schema Changes - SensorMetric Foreign Key
 
-## New /metrics Endpoint Implementation Plan
+## Changes Made
+- Changed `SensorMetric.device_id` from `Optional[str]` to `Optional[int]` with foreign key constraint to `Device.device_id`
+- Added bidirectional relationship with `back_populates`
+- Added `Relationship` import from `sqlmodel`
+- Added `List` import from `typing`
 
-### Overview
-Create a new `/metrics` endpoint that provides the same data as `/sensormetrics` but with date filtering capabilities using min and max date parameters.
+## Implications and Required Changes
 
-### Strategy
+### 1. Database Migration
+- **CRITICAL**: Enhanced migration that handles data conversion:
+  - Finds all unique device_id values from sensormetric that don't exist as device.name
+  - Creates new Device entries using the device_id string as the device name
+  - Updates sensormetric.device_id to reference the actual device.device_id (integer)
+  - Adds foreign key constraint after data migration
+  - **Downgrade**: Reverts device_id back to device names and drops foreign key
 
-#### 1. API Design
-- **Endpoint**: `GET /metrics`
-- **Query Parameters**:
-  - `min_date` (optional): Unix timestamp or ISO date string for minimum date filter
-  - `max_date` (optional): Unix timestamp or ISO date string for maximum date filter
-  - `limit` (optional): Number of records to return (default: 100, unlim possible with limit 0)
-  - do pagination after 200 entries
-- **Response**: Same format as `/sensormetrics` but filtered by date range
+### 2. Data Validation
+- **RESOLVED**: Migration automatically creates missing Device entries
+- All existing `device_id` values will have corresponding `device` table entries after migration
+- Auto-created devices will have minimal information (only name field populated)
 
-#### 2. Implementation Approach
+### 3. API Changes
+- Update API endpoints that accept `device_id` in SensorMetric creation/updates
+- Change validation to expect integers instead of strings
+- Update API documentation/OpenAPI specs
+- Consider if you want to expose the relationship in API responses (nested data)
 
-##### Option B: Create separate /metrics endpoint
-- New endpoint with dedicated filtering logic
-- Keep /sensormetrics unchanged for backward compatibility
-- Pros: Clean separation, no breaking changes
-- Cons: Code duplication
+### 4. Application Logic
+- Review all code that creates SensorMetric instances
+- Update any hardcoded device_id strings to use integer references
+- Modify device lookup logic if needed
+- **NEW**: Can now use `device.sensor_metrics` to get all metrics for a device
+- **NEW**: Can use `sensor_metric.device` to get the associated device
+- **IMPORTANT**: Review auto-migrated devices and update their information as needed
 
-#### 3. Database Query Strategy
-```sql
-SELECT * FROM sensormetrics 
-WHERE timestamp_server >= min_date 
-  AND timestamp_server <= max_date 
-ORDER BY timestamp_server DESC 
+### 5. Testing
+- Update unit tests for SensorMetric model
+- Update integration tests that create sensor metrics
+- Test foreign key constraint behavior (cascading deletes, etc.)
+- **NEW**: Test relationship loading and lazy loading behavior
+- **NEW**: Test migration with various data scenarios
 
-```
+### 6. Frontend/Client Changes
+- Update any frontend code that sends device_id as string
+- Modify forms/inputs to handle integer device IDs
+- Update client-side validation
 
-#### 4. Implementation Steps
+### 7. Error Handling
+- Add proper error handling for foreign key constraint violations
+- Handle cases where referenced device doesn't exist
 
-1. **Create new route in router**
-   - Add `/metrics` endpoint to  `v2/routers/metrics.py`
-   - Accept query parameters: `min_date`, `max_date`, `limit`
+### 8. Performance Considerations
+- Foreign key adds referential integrity but may impact insert performance
+- Consider indexing strategy for device_id lookups
+- Monitor query performance after changes
+- **NEW**: Be aware of N+1 queries when accessing relationships - use eager loading when needed
 
-2. **Add query parameter validation**
-   - Validate date formats (Unix timestamp or ISO string)
-   - Handle timezone considerations
+### 9. Documentation
+- Update database schema documentation
+- Update API documentation
+- Update developer guides mentioning the relationship
+- **NEW**: Document the new relationship access patterns
+- **NEW**: Document the migration process and auto-created device handling
 
-3. **Implement database filtering**
-   - Extend SQLModel query with WHERE clauses
-   - Use `timestamp_server` field for filtering
-   - Maintain ordering by timestamp DESC
-
-4. **Add comprehensive tests**
-   - Test date filtering with various formats
-   - Test edge cases (invalid dates, large ranges)
-   - Test performance with large datasets
-
-#### 5. Date Format Handling
-- **Input formats supported**:
-  - Unix timestamp: `1617184800`
-  - ISO string: `2021-03-31T10:00:00Z`
-- **Conversion strategy**: Convert all inputs to Unix timestamps for database queries
-
-#### 6. Error Handling
-- Invalid date formats → 400 Bad Request
-- Date range too large → 400 Bad Request  
-- Missing or malformed parameters → Use defaults
-
-#### 7. Performance Considerations
-- Add database index on `timestamp_server` if not exists
-- Implement query result caching for common date ranges
-- Set reasonable default limits to prevent performance issues
-
-#### 8. Testing Strategy
-- Unit tests for date parsing and validation
-- Integration tests for v2 endpoints
-- Performance tests with large datasets
-- Edge case testing (boundary dates, invalid inputs)
-
-### Example Usage
-```bash
-# Get all metrics from last 24 hours
-GET /metrics?min_date=1617184800&max_date=1617271200
-
-# Get last 50 metrics from specific date range
-GET /metrics?min_date=2021-03-31T00:00:00Z&max_date=2021-04-01T00:00:00Z&limit=50
-```
-
-### Next Steps
-1. Implement the endpoint in both v1 and v2 routers
-2. Add comprehensive test coverage
-3. Update API documentation
-4. Consider adding to prod no-write tests
+### 10. Post-Migration Tasks
+- **NEW**: Review auto-migrated devices and update their metadata
+- **NEW**: Consider merging duplicate devices if string identifiers were inconsistent
+- **NEW**: Update any external references to use the new integer device IDs
+- **NEW**: Update any external references to use the new integer device IDs

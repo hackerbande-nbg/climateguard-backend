@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import re
 
 from app.db import get_session
-from app.models import SensorMetric
+from app.models import SensorMetric, Device
 
 router = APIRouter()
 
@@ -16,6 +16,15 @@ class PaginatedMetricsResponse(BaseModel):
     """Response model for paginated metrics"""
     data: list[SensorMetric]
     pagination: Dict[str, Any]
+
+
+class CreateMetricRequest(BaseModel):
+    """Request model for creating a new metric"""
+    device_name: str
+    timestamp_device: Optional[int] = None
+    timestamp_server: Optional[int] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
 
 
 def parse_date_parameter(date_str: str) -> int:
@@ -123,3 +132,37 @@ async def get_metrics(
                 "has_prev": False
             }
         )
+
+
+@router.post("/metrics")
+async def create_metric(
+    metric_data: CreateMetricRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Create a new sensor metric by device name"""
+
+    # Look up device by name
+    device_query = select(Device).where(Device.name == metric_data.device_name)
+    device_result = await session.execute(device_query)
+    device = device_result.scalar_one_or_none()
+
+    if not device:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Device with name '{metric_data.device_name}' not found"
+        )
+
+    # Create new metric
+    new_metric = SensorMetric(
+        device_id=device.device_id,
+        timestamp_device=metric_data.timestamp_device,
+        timestamp_server=metric_data.timestamp_server,
+        temperature=metric_data.temperature,
+        humidity=metric_data.humidity
+    )
+
+    session.add(new_metric)
+    await session.commit()
+    await session.refresh(new_metric)
+
+    return new_metric

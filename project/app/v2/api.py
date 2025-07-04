@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.v1.routers import metrics as v1_metrics
 from app.v2.routers import metrics as v2_metrics
 
 app = FastAPI(
     title="climateguard-backend v2",
     description="semiproduction of climateguard backend",
-    version="2.1.0",
+    version="2.2.0",
     openapi_url="/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -27,7 +26,6 @@ app.add_middleware(
 
 # first wins
 app.include_router(v2_metrics.router)
-app.include_router(v1_metrics.router)
 
 
 @app.get("/ping")
