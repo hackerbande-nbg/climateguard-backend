@@ -231,7 +231,7 @@ def test_update_device(base_url):
     # First create a device
     dev_name = generate_unique_device_name("Test Device Update")
     device_data = {
-        "name": dev_name,
+        "name": generate_unique_device_name("Test Device Update"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
@@ -248,7 +248,7 @@ def test_update_device(base_url):
 
     # Update the device
     update_data = {
-        "name": dev_name,
+        "name": generate_unique_device_name("Updated Test Device"),
         "latitude": 41.0000,
         "longitude": -75.0000,
         "ground_cover": "concrete",
@@ -289,6 +289,46 @@ def test_update_device_not_found(base_url):
     response = http_client.put(f"{base_url}/devices/999999", json=update_data)
     debug_response_if_not_2xx(response)
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_update_device_invalid_enum(base_url):
+    """Test updating a device with invalid enum values"""
+    # First create a device
+    device_data = {
+        "name": generate_unique_device_name("Test Device Invalid Update"),
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "ground_cover": "grass",
+        "orientation": "north",
+        "shading": 0,
+        "tags": []
+    }
+
+    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
+    assert create_response.status_code == 201
+    created_device = create_response.json()
+    device_id = created_device["device_id"]
+
+    # Try to update with invalid enum
+    update_data = {
+        "name": "Updated Device",
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "ground_cover": "invalid_ground",
+        "orientation": "north",
+        "shading": "full_sun",
+        "tags": []
+    }
+
+    response = http_client.put(
+        f"{base_url}/devices/{device_id}", json=update_data)
+    debug_response_if_not_2xx(response)
+    assert response.status_code == 422  # Validation error
+
+    # Cleanup
+    http_client.delete(f"{base_url}/devices/{device_id}")
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
