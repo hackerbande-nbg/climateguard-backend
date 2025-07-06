@@ -8,7 +8,7 @@ class HttpClient:
         self.session = requests.Session()
         retry_strategy = Retry(
             total=retries,
-            status_forcelist=retry_on_status or [503],
+            status_forcelist=retry_on_status or [500, 502, 503, 504],
             allowed_methods=["GET", "POST", "PUT", "DELETE"],
             backoff_factor=0.3
         )

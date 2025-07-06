@@ -1,3 +1,6 @@
+# custom project stuff
+ai.md
+
 # Ignore Python cache directories
 __pycache__/
 **/__pycache__/
@@ -9,7 +12,7 @@ __pycache__/
 venv/
 env/
 
-AI.md
+
 
 # Byte-compiled / optimized / DLL files
 *.py[cod]

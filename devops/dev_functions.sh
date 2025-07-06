@@ -1,7 +1,3 @@
-alias quandevkill="docker compose down -v"
-
-alias quantest="python3 -m pytest test/integration/"
-
 print_checkmarks() {
   local message="$1"
   echo ""
@@ -11,6 +7,18 @@ print_checkmarks() {
   echo "✅"
   echo "✅"  
   echo ""
+} 
+
+quantest() {
+    echo ""
+    echo "🧪 Running tests..."
+    python3 -m pytest -n 4 test/integration/
+}
+
+quandebug() {
+    echo ""
+    docker compose down || true
+    docker compose up -d db
 }
 
 quandeploy() {
@@ -70,10 +78,16 @@ quandeploy() {
     done
 
     echo ""
+    echo ""
     echo "🧪 Running tests..."
-    python3 -m pytest || {
+    python3 -m pytest -n 4 --tb=short --quiet
+    test_exit_code=$?
+    
+    if [ $test_exit_code -ne 0 ]; then
         echo "❌ Some tests failed."
-    }
+        return 1
+    fi
+    
     print_checkmarks "python tests executed"
     sleep 1
     print_checkmarks "Deployment completed"
@@ -88,4 +102,5 @@ quandeploy() {
     echo "🚀 Deployment complete! You can now access the application."
     echo "Visit http://localhost:$FASTAPI_PORT/v2/docs in your browser."
     echo ""
+    
 }
