@@ -43,6 +43,7 @@ quandeploy() {
 
     print_checkmarks "Docker Daemon running"
 
+    # Lint
     echo "🧹 Linting Python Code..."
     flake8 --config=config/flake8.ini || {
         echo "❌ Linting failed. Please fix the issues before deploying."
@@ -67,7 +68,7 @@ quandeploy() {
 
     echo "⏱️ Waiting a moment for services to stabilize..."
     # Parameters
-    NUM_OS=${1:-20}         # num of  "o"s
+    NUM_OS=${1:-2}         # num of  "o"s
     DELAY=${2:-0.1}        # seconds between prints
 
     progress=""
