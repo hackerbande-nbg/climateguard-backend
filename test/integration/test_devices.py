@@ -231,7 +231,7 @@ def test_update_device(base_url):
     # First create a device
     dev_name = generate_unique_device_name("Test Device Update")
     device_data = {
-        "name": generate_unique_device_name("Test Device Update"),
+        "name": dev_name,
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
@@ -248,7 +248,7 @@ def test_update_device(base_url):
 
     # Update the device
     update_data = {
-        "name": generate_unique_device_name("Updated Test Device"),
+        "name": dev_name,
         "latitude": 41.0000,
         "longitude": -75.0000,
         "ground_cover": "concrete",
