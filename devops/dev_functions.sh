@@ -6,8 +6,10 @@ print_checkmarks() {
   local message="$1"
   echo ""
   echo "✅"
+  echo "✅"
   echo "✅ $message"
   echo "✅"
+  echo "✅"  
   echo ""
 }
 
@@ -32,6 +34,13 @@ quandeploy() {
     sleep 1
 
     print_checkmarks "Docker Daemon running"
+
+    echo "🧹 Linting Python Code..."
+    flake8 --config=config/flake8.ini || {
+        echo "❌ Linting failed. Please fix the issues before deploying."
+        return 1
+    }
+    print_checkmarks "Python Code linted"
 
     echo "🔻 Stopping existing Docker containers..."
     docker compose down || true

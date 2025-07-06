@@ -27,6 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements_dev.txt
 
+      - name: Install dependencies
+        run: |
+          flake8 --config=config/flake8.ini
 
       - name: Write .env file
         run: echo "${{ secrets.QUANTUM_ENV_STAGE }}" > .env

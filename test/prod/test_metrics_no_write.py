@@ -1,7 +1,6 @@
 import json
 import requests
 import pytest
-import hashlib
 
 # Load the URL from config/test_config.json
 with open("config/test_config.json") as config_file:

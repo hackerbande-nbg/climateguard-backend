@@ -105,9 +105,6 @@ def test_get_metrics_pagination_navigation(base_url):
     response2 = http_client.get(f"{base_url}/metrics?limit=5&page=2")
     assert response2.status_code == 200
 
-    data1 = response1.json()
-    data2 = response2.json()
-
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_metrics_pagination_invalid_page(base_url):
