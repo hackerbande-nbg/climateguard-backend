@@ -2,7 +2,6 @@ from sqlmodel import SQLModel
 from typing import Optional, List
 from datetime import datetime
 from pydantic import Field
-from .models import GroundCover, Orientation
 
 
 class TagCreate(SQLModel):
@@ -25,12 +24,12 @@ class DeviceCreate(SQLModel):
     appeui: Optional[str] = None
     deveui: Optional[str] = None
     appkey: Optional[str] = None
-    ground_cover: Optional[GroundCover] = None
+    ground_cover: Optional[str] = None
     height_above_ground: Optional[int] = Field(None, ge=0)
     shading: Optional[int] = None
     close_to_a_tree: Optional[bool] = None
     close_to_water: Optional[bool] = None
-    orientation: Optional[Orientation] = None
+    orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = Field(None, ge=0)
     tags: List[str] = []
 
@@ -46,12 +45,12 @@ class DeviceRead(SQLModel):
     appeui: Optional[str] = None
     deveui: Optional[str] = None
     appkey: Optional[str] = None
-    ground_cover: Optional[GroundCover] = None
+    ground_cover: Optional[str] = None
     height_above_ground: Optional[int] = None
     shading: Optional[int] = None
     close_to_a_tree: Optional[bool] = None
     close_to_water: Optional[bool] = None
-    orientation: Optional[Orientation] = None
+    orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = None
     tags: List[TagRead] = []
 
@@ -65,11 +64,11 @@ class DeviceUpdate(SQLModel):
     appeui: Optional[str] = None
     deveui: Optional[str] = None
     appkey: Optional[str] = None
-    ground_cover: Optional[GroundCover] = None
+    ground_cover: Optional[str] = None
     height_above_ground: Optional[int] = Field(None, ge=0)
     shading: Optional[int] = None
     close_to_a_tree: Optional[bool] = None
     close_to_water: Optional[bool] = None
-    orientation: Optional[Orientation] = None
+    orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = Field(None, ge=0)
     tags: Optional[List[str]] = None

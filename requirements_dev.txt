@@ -5,6 +5,7 @@ asyncpg
 fastapi
 flake8
 pytest
+pytest-xdist
 requests
 sqlmodel
 uvicorn

@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 
 from app.db import get_session
-from app.models import Device, Tag, DeviceTagLink, GroundCover, Orientation
+from app.models import Device, Tag, DeviceTagLink
 from app.schemas import DeviceCreate, DeviceRead, DeviceUpdate, TagRead
 
 router = APIRouter()
@@ -25,9 +25,9 @@ async def get_devices(
     page: Optional[int] = Query(
         1, ge=1, description="Page number for pagination (starts from 1)"),
     name: Optional[str] = Query(None, description="Filter by device name"),
-    ground_cover: Optional[GroundCover] = Query(
+    ground_cover: Optional[str] = Query(
         None, description="Filter by ground cover"),
-    orientation: Optional[Orientation] = Query(
+    orientation: Optional[str] = Query(
         None, description="Filter by orientation"),
     shading: Optional[int] = Query(
         None, description="Filter by shading level"),
@@ -137,14 +137,8 @@ async def get_device(
     session: AsyncSession = Depends(get_session)
 ):
     """Get a specific device with tags"""
-
-    # Check for specific problematic ID that should return 500
-    if device_id == 9999999999:
-        raise HTTPException(
-            status_code=500, detail="Internal server error: Invalid device ID")
-
     # Check for out of bounds device ID
-    if device_id < 1 or device_id > 2147483647:
+    if device_id < 1 or device_id > 1000000:
         raise HTTPException(
             status_code=400, detail="Device ID out of bounds")
 
@@ -377,14 +371,8 @@ async def delete_device(
     session: AsyncSession = Depends(get_session)
 ):
     """Delete a device"""
-
-    # Check for specific problematic ID that should return 500
-    if device_id == 9999999999:
-        raise HTTPException(
-            status_code=500, detail="Internal server error: Invalid device ID")
-
     # Check for out of bounds device ID
-    if device_id < 1 or device_id > 2147483647:
+    if device_id < 1 or device_id > 1000000:
         raise HTTPException(
             status_code=400, detail="Device ID out of bounds")
 
