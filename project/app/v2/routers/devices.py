@@ -137,14 +137,8 @@ async def get_device(
     session: AsyncSession = Depends(get_session)
 ):
     """Get a specific device with tags"""
-
-    # Check for specific problematic ID that should return 500
-    if device_id == 9999999999:
-        raise HTTPException(
-            status_code=500, detail="Internal server error: Invalid device ID")
-
     # Check for out of bounds device ID
-    if device_id < 1 or device_id > 2147483647:
+    if device_id < 1 or device_id > 1000000:
         raise HTTPException(
             status_code=400, detail="Device ID out of bounds")
 
@@ -377,14 +371,8 @@ async def delete_device(
     session: AsyncSession = Depends(get_session)
 ):
     """Delete a device"""
-
-    # Check for specific problematic ID that should return 500
-    if device_id == 9999999999:
-        raise HTTPException(
-            status_code=500, detail="Internal server error: Invalid device ID")
-
     # Check for out of bounds device ID
-    if device_id < 1 or device_id > 2147483647:
+    if device_id < 1 or device_id > 1000000:
         raise HTTPException(
             status_code=400, detail="Device ID out of bounds")
 

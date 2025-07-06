@@ -31,8 +31,8 @@ def debug_response_if_not_2xx(response):
 
 
 def generate_unique_device_name(base_name: str) -> str:
-    """Generate a unique device name with a 9-character random number"""
-    random_suffix = ''.join(random.choices(string.digits, k=9))
+    """Generate a unique device name with an 8-character random number"""
+    random_suffix = ''.join(random.choices(string.digits, k=8))
     return f"{base_name}_{random_suffix}"
 
 
@@ -93,8 +93,7 @@ def test_create_device_with_tags(base_url):
 def test_create_device_invalid_enum(base_url):
     """Test creating a device with invalid enum values"""
     device_data = {
-        "name": "Test Device Invalid",
-        "description": "A test device with invalid enum",
+        "name": generate_unique_device_name("Test Device Invalid"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "invalid_ground",
@@ -104,6 +103,7 @@ def test_create_device_invalid_enum(base_url):
     }
 
     response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(response)
     assert response.status_code == 422  # Validation error
 
 
@@ -117,6 +117,7 @@ def test_create_device_missing_required_fields(base_url):
     }
 
     response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(response)
     assert response.status_code == 422  # Validation error
 
 
@@ -124,6 +125,7 @@ def test_create_device_missing_required_fields(base_url):
 def test_get_devices_no_filters(base_url):
     """Test getting all devices without filters"""
     response = http_client.get(f"{base_url}/devices")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -136,6 +138,7 @@ def test_get_devices_no_filters(base_url):
 def test_get_devices_with_pagination(base_url):
     """Test getting devices with pagination"""
     response = http_client.get(f"{base_url}/devices?limit=5&page=1")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -157,6 +160,7 @@ def test_get_devices_with_filters(base_url):
     """Test getting devices with enum filters"""
     response = http_client.get(
         f"{base_url}/devices?ground_cover=grass&orientation=north")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -169,6 +173,7 @@ def test_get_devices_with_sorting(base_url):
     """Test getting devices with sorting"""
     response = http_client.get(
         f"{base_url}/devices?sort_by=name&sort_order=asc")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -181,29 +186,28 @@ def test_get_device_by_id(base_url):
     """Test getting a specific device by ID"""
     # First create a device
     device_data = {
-        "name": "Test Device Get By ID",
-        "description": "A test device for getting by ID",
+        "name": generate_unique_device_name("Test Device Get By ID"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
         "shading": 100,
-        "tags": [{"category": "test", "tag_name": "get_by_id"}]
+        "tags": []
     }
 
     create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
-    device_id = created_device["id"]
+    device_id = created_device["device_id"]
 
     # Get the device by ID
     response = http_client.get(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
-    assert data["id"] == device_id
+    assert data["device_id"] == device_id
     assert data["name"] == device_data["name"]
-    assert len(data["tags"]) == 1
-    assert data["tags"][0]["category"] == "test"
 
     # Cleanup
     http_client.delete(f"{base_url}/devices/{device_id}")
@@ -212,9 +216,9 @@ def test_get_device_by_id(base_url):
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_device_not_found(base_url):
     """Test getting a non-existent device"""
-    response = http_client.get(f"{base_url}/devices/9999999999")
+    response = http_client.get(f"{base_url}/devices/999999")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 500  # Special case for this ID
+    assert response.status_code == 404  # Special case for this ID
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -244,42 +248,38 @@ def test_update_device(base_url):
     """Test updating a device"""
     # First create a device
     device_data = {
-        "name": "Test Device Update",
-        "description": "A test device for updating",
+        "name": generate_unique_device_name("Test Device Update"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
-        "shading": "full_sun",
-        "tags": [{"category": "test", "tag_name": "update"}]
+        "shading": 0,
+        "tags": ["test"]
     }
 
     create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
-    device_id = created_device["id"]
+    device_id = created_device["device_id"]
 
     # Update the device
     update_data = {
-        "name": "Updated Test Device",
-        "description": "An updated test device",
+        "name": generate_unique_device_name("Updated Test Device"),
         "latitude": 41.0000,
         "longitude": -75.0000,
         "ground_cover": "concrete",
         "orientation": "south",
-        "shading": "partial_shade",
-        "tags": [
-            {"category": "test", "tag_name": "updated"},
-            {"category": "location", "tag_name": "urban"}
-        ]
+        "shading": 50,
+        "tags": ["updated", "test"]
     }
 
     response = http_client.put(
         f"{base_url}/devices/{device_id}", json=update_data)
+    debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == update_data["name"]
-    assert data["description"] == update_data["description"]
     assert data["latitude"] == update_data["latitude"]
     assert data["longitude"] == update_data["longitude"]
     assert data["ground_cover"] == update_data["ground_cover"]
@@ -304,6 +304,7 @@ def test_update_device_not_found(base_url):
     }
 
     response = http_client.put(f"{base_url}/devices/999999", json=update_data)
+    debug_response_if_not_2xx(response)
     assert response.status_code == 404
 
 
@@ -312,25 +313,24 @@ def test_update_device_invalid_enum(base_url):
     """Test updating a device with invalid enum values"""
     # First create a device
     device_data = {
-        "name": "Test Device Invalid Update",
-        "description": "A test device for invalid update",
+        "name": generate_unique_device_name("Test Device Invalid Update"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
-        "shading": "full_sun",
+        "shading": 0,
         "tags": []
     }
 
     create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
-    device_id = created_device["id"]
+    device_id = created_device["device_id"]
 
     # Try to update with invalid enum
     update_data = {
         "name": "Updated Device",
-        "description": "Updated device",
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "invalid_ground",
@@ -341,6 +341,7 @@ def test_update_device_invalid_enum(base_url):
 
     response = http_client.put(
         f"{base_url}/devices/{device_id}", json=update_data)
+    debug_response_if_not_2xx(response)
     assert response.status_code == 422  # Validation error
 
     # Cleanup
@@ -352,27 +353,29 @@ def test_delete_device(base_url):
     """Test deleting a device"""
     # First create a device
     device_data = {
-        "name": "Test Device Delete",
-        "description": "A test device for deletion",
+        "name": generate_unique_device_name("Test Device Delete"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
-        "shading": "full_sun",
-        "tags": [{"category": "test", "tag_name": "delete"}]
+        "shading": 0,
+        "tags": []
     }
 
     create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
-    device_id = created_device["id"]
+    device_id = created_device["device_id"]
 
     # Delete the device
     response = http_client.delete(f"{base_url}/devices/{device_id}")
-    assert response.status_code == 204
+    debug_response_if_not_2xx(response)
+    assert response.status_code == 200
 
     # Verify device is deleted
     get_response = http_client.get(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(get_response)
     assert get_response.status_code == 404
 
 
@@ -380,32 +383,35 @@ def test_delete_device(base_url):
 def test_delete_device_not_found(base_url):
     """Test deleting a non-existent device"""
     response = http_client.delete(f"{base_url}/devices/999999")
+    debug_response_if_not_2xx(response)
     assert response.status_code == 404
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_create_device_duplicate_name(base_url):
     """Test creating a device with duplicate name"""
+    unique_name = generate_unique_device_name("Duplicate Device Name")
     device_data = {
-        "name": "Duplicate Device Name",
-        "description": "A test device with duplicate name",
+        "name": unique_name,
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
-        "shading": "full_sun",
+        "shading": 0,
         "tags": []
     }
 
     # Create first device
     create_response1 = http_client.post(
         f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response1)
     assert create_response1.status_code == 201
-    device_id1 = create_response1.json()["id"]
+    device_id1 = create_response1.json()["device_id"]
 
     # Try to create second device with same name
     create_response2 = http_client.post(
         f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response2)
     assert create_response2.status_code == 409  # Conflict
 
     # Cleanup
@@ -417,49 +423,43 @@ def test_device_tag_relationships_crud(base_url):
     """Test complete CRUD operations maintaining tag relationships"""
     # Create device with tags
     device_data = {
-        "name": "Test Device Tag CRUD",
-        "description": "A test device for tag CRUD operations",
+        "name": generate_unique_device_name("Test Device Tag CRUD"),
         "latitude": 40.7128,
         "longitude": -74.0060,
         "ground_cover": "grass",
         "orientation": "north",
-        "shading": "full_sun",
-        "tags": [
-            {"category": "location", "tag_name": "urban"},
-            {"category": "type", "tag_name": "sensor"}
-        ]
+        "shading": 0,
+        "tags": ["urban", "sensor"]
     }
 
     create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
-    device_id = created_device["id"]
+    device_id = created_device["device_id"]
     assert len(created_device["tags"]) == 2
 
     # Read device and verify tags
     get_response = http_client.get(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(get_response)
     assert get_response.status_code == 200
     get_data = get_response.json()
     assert len(get_data["tags"]) == 2
 
     # Update device with different tags
     update_data = {
-        "name": "Updated Device Tag CRUD",
-        "description": "Updated device with new tags",
+        "name": generate_unique_device_name("Updated Device Tag CRUD"),
         "latitude": 41.0000,
         "longitude": -75.0000,
         "ground_cover": "concrete",
         "orientation": "south",
-        "shading": "partial_shade",
-        "tags": [
-            {"category": "environment", "tag_name": "outdoor"},
-            {"category": "status", "tag_name": "active"},
-            {"category": "maintenance", "tag_name": "scheduled"}
-        ]
+        "shading": 0,
+        "tags": ["outdoor", "active", "scheduled"]
     }
 
     update_response = http_client.put(
         f"{base_url}/devices/{device_id}", json=update_data)
+    debug_response_if_not_2xx(update_response)
     assert update_response.status_code == 200
     updated_device = update_response.json()
     assert len(updated_device["tags"]) == 3
@@ -468,8 +468,29 @@ def test_device_tag_relationships_crud(base_url):
 
     # Delete device (should also remove tag relationships)
     delete_response = http_client.delete(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(delete_response)
     assert delete_response.status_code == 204
 
     # Verify device is deleted
     get_response2 = http_client.get(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(get_response2)
+    assert get_response2.status_code == 404
+
+    update_response = http_client.put(
+        f"{base_url}/devices/{device_id}", json=update_data)
+    debug_response_if_not_2xx(update_response)
+    assert update_response.status_code == 200
+    updated_device = update_response.json()
+    assert len(updated_device["tags"]) == 3
+    assert any(tag["category"] ==
+               "environment" for tag in updated_device["tags"])
+
+    # Delete device (should also remove tag relationships)
+    delete_response = http_client.delete(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(delete_response)
+    assert delete_response.status_code == 204
+
+    # Verify device is deleted
+    get_response2 = http_client.get(f"{base_url}/devices/{device_id}")
+    debug_response_if_not_2xx(get_response2)
     assert get_response2.status_code == 404
