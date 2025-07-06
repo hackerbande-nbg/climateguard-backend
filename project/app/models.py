@@ -4,7 +4,7 @@ from enum import Enum
 from datetime import datetime
 
 # vibe code instructions
-# make sure that all entities have tags associated with them.
+# make sure that all entities have tags associated with them from model point of view.
 
 
 class SensorMetricTagLink(SQLModel, table=True):
@@ -103,14 +103,6 @@ class Orientation(str, Enum):
     south = "south"
 
 
-class Shading(int, Enum):
-    one = 1
-    two = 2
-    three = 3
-    four = 4
-    five = 5
-
-
 class Device(SQLModel, table=True):
     device_id: Optional[int] = Field(default=None, primary_key=True)
     name: Optional[str] = Field(default=None, unique=True)
@@ -124,7 +116,7 @@ class Device(SQLModel, table=True):
     appkey: Optional[str] = None
     ground_cover: Optional[GroundCover] = None
     height_above_ground: Optional[int] = None
-    shading: Optional[Shading] = None
+    shading: Optional[int] = None  # 0 - full sun, 100 - full shade
     close_to_a_tree: Optional[bool] = None
     close_to_water: Optional[bool] = None
     orientation: Optional[Orientation] = None

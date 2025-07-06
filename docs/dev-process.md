@@ -92,7 +92,8 @@ Process for local debugging:
 1. **Start PostgreSQL database first**:
    ```bash
    # Run only the database container
-   docker-compose up db -d
+   docker compose down
+   docker compose up db -d
    ```
 
 2. **Debug FastAPI application**:
@@ -103,7 +104,7 @@ Process for local debugging:
 
 3. **Debug integration tests**:
    - While FastAPI is running in debug mode
-   - Select "Python Debugger: Test Metrics" configuration
+   - Select "Python Debugger: Test integration" configuration
    - Start the second debugger (F5)
    - This will run the integration tests against the local FastAPI instance
 

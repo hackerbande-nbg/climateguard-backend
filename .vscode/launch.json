@@ -30,7 +30,7 @@
             "jinja": true
         },
         {
-            "name": "Python Debugger: Test Metrics",
+            "name": "Python Debugger: Integration Tests",
             "type": "debugpy",
             "request": "launch",
             "module": "pytest",
