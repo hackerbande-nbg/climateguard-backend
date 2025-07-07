@@ -15,6 +15,45 @@ class TagRead(SQLModel):
     tag: str
 
 
+# Authentication Schemas
+class UserRegistrationRequest(SQLModel):
+    """Schema for user self-registration"""
+    username: str = Field(...,
+                          description="Username (must match existing database entry)")
+    email: Optional[str] = Field(None, description="Optional email address")
+
+
+class UserRead(SQLModel):
+    """Schema for user information (excludes sensitive data)"""
+    user_id: int
+    username: str
+    email: Optional[str] = None
+    is_active: bool
+    is_registered: bool
+    created_at: Optional[datetime] = None
+    registered_at: Optional[datetime] = None
+    last_login: Optional[datetime] = None
+    tags: List[TagRead] = []
+
+
+class ApiKeyResponse(SQLModel):
+    """Schema for API key generation response"""
+    user_id: int
+    username: str
+    api_key: str = Field(...,
+                         description="32-character API key (shown only once)")
+    message: str = Field(
+        default="Registration complete. Save your API key - it won't be shown again.")
+
+
+class AuthenticationError(SQLModel):
+    """Schema for authentication error responses"""
+    detail: str
+    error_code: str
+    status_code: int
+
+
+# Device Schemas
 class DeviceCreate(SQLModel):
     name: str
     hardware_id: Optional[int] = None
