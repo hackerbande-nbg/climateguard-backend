@@ -69,7 +69,7 @@ quandeploy() {
     echo "⏱️ Waiting a moment for services to stabilize..."
     # Parameters
     NUM_OS=${1:-20}         # num of  "o"s
-    DELAY=${2:-0.1}        # seconds between prints
+    DELAY=${2:-0.05}        # seconds between prints
 
     progress=""
     for ((i=1; i<=NUM_OS; i++)); do
