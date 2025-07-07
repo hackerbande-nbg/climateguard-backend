@@ -102,6 +102,8 @@ class Device(SQLModel, table=True):
     close_to_water: Optional[bool] = None
     orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = None
+    # 0 - full sun, 100 - full shade
+    shading_of_surrounding_area: Optional[int] = None
 
     sensor_metrics: List["SensorMetric"] = Relationship(
         back_populates="device")

@@ -4,7 +4,7 @@ from urllib3.util.retry import Retry
 
 
 class HttpClient:
-    def __init__(self, retries=6, retry_on_status=None):
+    def __init__(self, retries=4, retry_on_status=None):
         self.session = requests.Session()
         retry_strategy = Retry(
             total=retries,
