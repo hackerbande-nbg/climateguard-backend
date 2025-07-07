@@ -42,4 +42,6 @@ jobs:
 
       - name: Run prod tests
         run: |
+          echo "Running production tests..."
+          sleep 2
           python3 -m pytest test/prod
