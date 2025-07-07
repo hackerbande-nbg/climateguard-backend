@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Path
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, func
 from datetime import datetime
@@ -9,7 +9,16 @@ from app.db import get_session
 from app.models import Device, Tag, DeviceTagLink
 from app.schemas import DeviceCreate, DeviceRead, DeviceUpdate, TagRead
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/devices",
+    tags=["devices"],
+    responses={
+        404: {"description": "Device not found"},
+        422: {"description": "Validation error"},
+        409: {"description": "Conflict - duplicate device name"},
+        400: {"description": "Bad request - invalid device ID"},
+    }
+)
 
 
 class PaginatedDevicesResponse(BaseModel):
@@ -18,22 +27,67 @@ class PaginatedDevicesResponse(BaseModel):
     pagination: Dict[str, Any]
 
 
-@router.get("/devices", response_model=PaginatedDevicesResponse)
+@router.get("",
+            response_model=PaginatedDevicesResponse,
+            summary="List devices with filtering and pagination",
+            description="""
+    Retrieve a paginated list of devices with optional filtering capabilities.
+    
+    **Filtering Options:**
+    - **name**: Partial match on device name (case-insensitive)
+    - **ground_cover**: Filter by ground cover type (earth, grass, concrete, asphalt, cobblestone, water, sand, other)
+    - **orientation**: Filter by device orientation (north, east, west, south)
+    - **shading**: Filter by shading level (0 = full sun, 100 = full shade)
+    - **tag_category**: Filter by tag category (e.g., "device", "location", "type")
+    - **tag_name**: Filter by specific tag name
+    
+    **Pagination:**
+    - **limit**: Number of records per page (1-200, default: 100)
+    - **page**: Page number starting from 1 (default: 1)
+    """,
+            response_description="Paginated list of devices with metadata"
+            )
 async def get_devices(
     limit: Optional[int] = Query(
-        100, ge=1, le=200, description="Number of records to return per page"),
+        100, ge=1, le=200,
+        description="Number of records to return per page",
+        example=10
+    ),
     page: Optional[int] = Query(
-        1, ge=1, description="Page number for pagination (starts from 1)"),
-    name: Optional[str] = Query(None, description="Filter by device name"),
+        1, ge=1,
+        description="Page number for pagination (starts from 1)",
+        example=1
+    ),
+    name: Optional[str] = Query(
+        None,
+        description="Filter by device name (partial match, case-insensitive)",
+        example="Sensor"
+    ),
     ground_cover: Optional[str] = Query(
-        None, description="Filter by ground cover"),
+        None,
+        description="Filter by ground cover type",
+        example="grass"
+    ),
     orientation: Optional[str] = Query(
-        None, description="Filter by orientation"),
+        None,
+        description="Filter by device orientation",
+        example="north"
+    ),
     shading: Optional[int] = Query(
-        None, description="Filter by shading level"),
+        None,
+        description="Filter by shading level (0-100)",
+        example=50
+    ),
     tag_category: Optional[str] = Query(
-        None, description="Filter by tag category"),
-    tag_name: Optional[str] = Query(None, description="Filter by tag name"),
+        None,
+        description="Filter by tag category",
+        example="device"
+    ),
+    tag_name: Optional[str] = Query(
+        None,
+        description="Filter by specific tag name",
+        example="outdoor"
+    ),
     session: AsyncSession = Depends(get_session)
 ):
     """Get devices with optional filtering and pagination"""
@@ -131,9 +185,51 @@ async def get_devices(
     )
 
 
-@router.get("/devices/{device_id}", response_model=DeviceRead)
+@router.get("/{device_id}",
+            response_model=DeviceRead,
+            summary="Get device by ID",
+            description="""
+    Retrieve a specific device by its unique ID along with associated tags.
+    
+    **Device ID Constraints:**
+    - Must be between 1 and 1,000,000
+    - Returns 404 if device does not exist
+    - Returns 400 if ID is out of bounds
+    """,
+            response_description="Device details with associated tags",
+            responses={
+                200: {
+                    "description": "Device found",
+                    "content": {
+                        "application/json": {
+                            "example": {
+                                "device_id": 1,
+                                "name": "Weather Station Alpha",
+                                "latitude": 40.7128,
+                                "longitude": -74.0060,
+                                "ground_cover": "grass",
+                                "orientation": "north",
+                                "shading": 25,
+                                "created_at": "2024-01-15T10:30:00Z",
+                                "tags": [
+                                    {"id": 1, "category": "device",
+                                        "tag": "outdoor"},
+                                    {"id": 2, "category": "device", "tag": "weather"}
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+            )
 async def get_device(
-    device_id: int,
+    device_id: int = Path(
+        ...,
+        description="Unique device identifier",
+        example=1,
+        ge=1,
+        le=1000000
+    ),
     session: AsyncSession = Depends(get_session)
 ):
     """Get a specific device with tags"""
@@ -180,9 +276,83 @@ async def get_device(
     )
 
 
-@router.post("/devices", response_model=DeviceRead, status_code=201)
+@router.post("",
+             response_model=DeviceRead,
+             status_code=201,
+             summary="Create a new device",
+             description="""
+    Create a new device with optional tags and configuration.
+    
+    **Required Fields:**
+    - **name**: Unique device name
+    
+    **Optional Configuration:**
+    - **ground_cover**: Type of ground surface (earth, grass, concrete, asphalt, cobblestone, water, sand, other)
+    - **orientation**: Device facing direction (north, east, west, south)
+    - **shading**: Shading level from 0 (full sun) to 100 (full shade)
+    - **tags**: List of tag strings (automatically assigned to "device" category)
+    
+    **Location Data:**
+    - **latitude**: GPS latitude (-90 to 90)
+    - **longitude**: GPS longitude (-180 to 180)
+    
+    **LoRaWAN Configuration:**
+    - **appeui**: Application EUI
+    - **deveui**: Device EUI
+    - **appkey**: Application Key
+    """,
+             response_description="Created device with generated ID and tags",
+             responses={
+                 201: {
+                     "description": "Device created successfully",
+                     "content": {
+                         "application/json": {
+                             "example": {
+                                 "device_id": 123,
+                                 "name": "New Weather Station",
+                                 "latitude": 40.7128,
+                                 "longitude": -74.0060,
+                                 "ground_cover": "grass",
+                                 "orientation": "north",
+                                 "shading": 25,
+                                 "created_at": "2024-01-15T10:30:00Z",
+                                 "tags": [
+                                     {"id": 15, "category": "device",
+                                         "tag": "outdoor"}
+                                 ]
+                             }
+                         }
+                     }
+                 },
+                 409: {
+                     "description": "Device name already exists",
+                     "content": {
+                         "application/json": {
+                             "example": {
+                                 "detail": "Device with name 'Weather Station Alpha' already exists"
+                             }
+                         }
+                     }
+                 }
+             }
+             )
 async def create_device(
-    device_data: DeviceCreate,
+    device_data: DeviceCreate = Body(
+        ...,
+        description="Device creation data",
+        example={
+            "name": "Weather Station Beta",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+            "ground_cover": "grass",
+            "orientation": "north",
+            "shading": 25,
+            "close_to_a_tree": True,
+            "close_to_water": False,
+            "height_above_ground": 200,
+            "tags": ["outdoor", "weather", "research"]
+        }
+    ),
     session: AsyncSession = Depends(get_session)
 ):
     """Create a new device with tags"""
@@ -266,10 +436,42 @@ async def create_device(
     )
 
 
-@router.put("/devices/{device_id}", response_model=DeviceRead)
+@router.put("/{device_id}",
+            response_model=DeviceRead,
+            summary="Update device",
+            description="""
+    Update an existing device. Only provided fields will be updated.
+    
+    **Updateable Fields:**
+    - All device configuration fields
+    - Device name (must remain unique)
+    - Location coordinates
+    - Tags (replaces all existing tags)
+    
+    **Tag Handling:**
+    - If tags are provided, all existing tags are replaced
+    - If tags are not provided (null), existing tags are preserved
+    - All tags are automatically assigned to "device" category
+    """,
+            response_description="Updated device with current tag associations"
+            )
 async def update_device(
-    device_id: int,
-    device_data: DeviceUpdate,
+    device_id: int = Path(
+        ...,
+        description="Unique device identifier to update",
+        example=1,
+        ge=1,
+        le=1000000
+    ),
+    device_data: DeviceUpdate = Body(
+        ...,
+        description="Device update data (only provided fields will be updated)",
+        example={
+            "name": "Updated Weather Station",
+            "shading": 30,
+            "tags": ["outdoor", "updated", "monitoring"]
+        }
+    ),
     session: AsyncSession = Depends(get_session)
 ):
     """Update a device"""
@@ -365,9 +567,40 @@ async def update_device(
     )
 
 
-@router.delete("/devices/{device_id}")
+@router.delete("/{device_id}",
+               summary="Delete device",
+               description="""
+    Permanently delete a device and all its associated data.
+    
+    **Warning:** This action cannot be undone and will:
+    - Remove the device record
+    - Remove all tag associations
+    - Orphan any sensor metrics (metrics will remain but lose device reference)
+    
+    **Returns:** Confirmation message with deleted device ID
+    """,
+               response_description="Deletion confirmation message",
+               responses={
+                   200: {
+                       "description": "Device deleted successfully",
+                       "content": {
+                           "application/json": {
+                               "example": {
+                                   "message": "Device 123 deleted successfully"
+                               }
+                           }
+                       }
+                   }
+               }
+               )
 async def delete_device(
-    device_id: int,
+    device_id: int = Path(
+        ...,
+        description="Unique device identifier to delete",
+        example=1,
+        ge=1,
+        le=1000000
+    ),
     session: AsyncSession = Depends(get_session)
 ):
     """Delete a device"""

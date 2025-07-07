@@ -34,6 +34,13 @@ class DeviceTagLink(SQLModel, table=True):
         default=None, foreign_key="tag.id", primary_key=True)
 
 
+class UserTagLink(SQLModel, table=True):
+    user_id: Optional[int] = Field(
+        default=None, foreign_key="user.user_id", primary_key=True)
+    tag_id: Optional[int] = Field(
+        default=None, foreign_key="tag.id", primary_key=True)
+
+
 class Tag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     category: str
@@ -48,6 +55,25 @@ class Tag(SQLModel, table=True):
         back_populates="tags", link_model=SoftwareVersionTagLink)
     devices: List["Device"] = Relationship(
         back_populates="tags", link_model=DeviceTagLink)
+    users: List["User"] = Relationship(
+        back_populates="tags", link_model=UserTagLink)
+
+
+class User(SQLModel, table=True):
+    user_id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(unique=True, index=True)
+    email: Optional[str] = None
+    api_key_hash: Optional[str] = None  # null until registration
+    api_key_salt: Optional[str] = None  # null until registration
+    is_active: bool = Field(default=False)
+    is_registered: bool = Field(default=False)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    registered_at: Optional[datetime] = None  # set during registration
+    last_login: Optional[datetime] = None
+
+    # Relationships - following vibe code instructions
+    tags: List[Tag] = Relationship(
+        back_populates="users", link_model=UserTagLink)
 
 
 class SensorMetric(SQLModel, table=True):

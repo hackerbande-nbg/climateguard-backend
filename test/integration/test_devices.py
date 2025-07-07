@@ -209,12 +209,12 @@ def test_get_device_out_of_bounds(base_url):
     # Test negative ID
     response = http_client.get(f"{base_url}/devices/-1")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 400
+    assert response.status_code == 422
 
     # Test ID that's too large
     response = http_client.get(f"{base_url}/devices/2147483648")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
