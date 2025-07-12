@@ -2,6 +2,7 @@ aiohttp
 aiosqlite
 alembic
 asyncpg
+dotenv
 fastapi
 flake8
 pytest
