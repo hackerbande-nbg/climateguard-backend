@@ -228,7 +228,7 @@ def test_get_device_not_found(base_url):
     """Test getting a non-existent device"""
     response = http_client.get(f"{base_url}/devices/999999")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 401  # Special case for this ID
+    assert response.status_code == 404  # Special case for this ID
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -237,12 +237,12 @@ def test_get_device_out_of_bounds(base_url):
     # Test negative ID
     response = http_client.get(f"{base_url}/devices/-1")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 401
+    assert response.status_code == 422
 
     # Test ID that's too large
     response = http_client.get(f"{base_url}/devices/2147483648")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 401
+    assert response.status_code == 422
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -250,7 +250,7 @@ def test_get_device_regular_not_found(base_url):
     """Test getting a regular non-existent device"""
     response = http_client.get(f"{base_url}/devices/999999")
     debug_response_if_not_2xx(response)
-    assert response.status_code == 401
+    assert response.status_code == 404
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
