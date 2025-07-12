@@ -36,8 +36,6 @@ class PaginatedDevicesResponse(BaseModel):
             description="""
     Retrieve a paginated list of devices with optional filtering capabilities.
     
-    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
-    
     **Filtering Options:**
     - **name**: Partial match on device name (case-insensitive)
     - **ground_cover**: Filter by ground cover type (earth, grass, concrete, asphalt, cobblestone, water, sand, other)
@@ -195,8 +193,6 @@ async def get_devices(
             summary="Get device by ID",
             description="""
     Retrieve a specific device by its unique ID along with associated tags.
-    
-    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
     
     **Device ID Constraints:**
     - Must be between 1 and 1,000,000
