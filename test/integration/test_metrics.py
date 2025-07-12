@@ -1,6 +1,7 @@
 import json
 import pytest
-from test.utils.http_client import HttpClient  # Updated import path
+from test.utils.http_client import HttpClient
+from test.utils.auth_helpers import get_auth_headers, TEST_USER
 
 # vibe code instructions
 # use the http_client so we have some juicy retries and exponential backoff
@@ -21,6 +22,11 @@ def debug_response_if_not_2xx(response):
     if not (200 <= response.status_code < 300):
         print(f"❌ Non-2xx response: {response.status_code}")
         print(f"Response body: {response.text}")
+
+
+def get_auth_headers_for_test():
+    """Get authentication headers for test requests"""
+    return get_auth_headers(TEST_USER['expected_api_key'])
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -131,3 +137,39 @@ def test_get_metrics_pagination_invalid_page(base_url):
     response = http_client.get(f"{base_url}/metrics?page=0")
     debug_response_if_not_2xx(response)
     assert response.status_code == 422  # Validation error
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_create_metric_with_auth(base_url):
+    """Test creating a metric with authentication"""
+    metric_data = {
+        "device_name": "test_device",
+        "temperature": 22.5,
+        "humidity": 65.0,
+        "timestamp_device": 1617184800,
+        "timestamp_server": 1617184805
+    }
+
+    response = http_client.post(
+        f"{base_url}/metrics", json=metric_data, headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(response)
+
+    if response.status_code == 404:
+        # Device not found is expected in test environment
+        assert "not found" in response.json().get("detail", "").lower()
+    else:
+        assert response.status_code == 201
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_create_metric_unauthorized(base_url):
+    """Test creating a metric without authentication should fail"""
+    metric_data = {
+        "device_name": "test_device",
+        "temperature": 22.5,
+        "humidity": 65.0
+    }
+
+    response = http_client.post(f"{base_url}/metrics", json=metric_data)
+    debug_response_if_not_2xx(response)
+    assert response.status_code == 401  # Unauthorized

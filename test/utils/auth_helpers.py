@@ -7,10 +7,9 @@ This module provides:
 - Authenticated HTTP client setup
 """
 
-import json
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from test.utils.http_client import HttpClient
 from dotenv import load_dotenv
 
@@ -39,9 +38,8 @@ def get_auth_headers(api_key: Optional[str] = None) -> Dict[str, str]:
     Returns:
         Dict with authentication headers
     """
-    global _test_api_key
 
-    key_to_use = api_key or _test_api_key
+    key_to_use = api_key
     if not key_to_use:
         raise ValueError("No API key available. Register test user first.")
 
@@ -60,9 +58,8 @@ def get_auth_headers_bearer(api_key: Optional[str] = None) -> Dict[str, str]:
     Returns:
         Dict with Bearer authentication headers
     """
-    global _test_api_key
 
-    key_to_use = api_key or _test_api_key
+    key_to_use = api_key
     if not key_to_use:
         raise ValueError("No API key available. Register test user first.")
 
@@ -104,14 +101,14 @@ def register_test_user(base_url: str, http_client: HttpClient) -> str:
     if response.status_code == 201:
         data = response.json()
         _test_api_key = data['api_key']
-        print(f"✅ Test user registered successfully")
+        print("✅ Test user registered successfully")
         print(f"   API Key: {_test_api_key}")
         return _test_api_key
 
     elif response.status_code == 409:
         # User already registered, this is expected in some test scenarios
-        print(f"⚠️  Test user already registered - this is expected")
-        print(f"   Using pre-configured API key for testing")
+        print("⚠️  Test user already registered - this is expected")
+        print("   Using pre-configured API key for testing")
         _test_api_key = TEST_USER['expected_api_key']
         return _test_api_key
 

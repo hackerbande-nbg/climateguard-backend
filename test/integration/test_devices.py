@@ -1,14 +1,10 @@
 import json
 import pytest
-import sys
 import random
 import string
-from pathlib import Path
 from test.utils.http_client import HttpClient
+from test.utils.auth_helpers import get_auth_headers, TEST_USER
 
-# Add the project root to the Python path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
 
 # vibe code instructions
 # use the http_client so we have some juicy retries and exponential backoff
@@ -36,6 +32,11 @@ def generate_unique_device_name(base_name: str) -> str:
     return f"{base_name}_{random_suffix}"
 
 
+def get_auth_headers_for_test():
+    """Get authentication headers for test requests"""
+    return get_auth_headers(TEST_USER['expected_api_key'])
+
+
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_create_device_basic(base_url):
     """Test creating a device with basic information"""
@@ -49,7 +50,8 @@ def test_create_device_basic(base_url):
         "tags": []
     }
 
-    response = http_client.post(f"{base_url}/devices", json=device_data)
+    response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 201
     data = response.json()
@@ -61,7 +63,26 @@ def test_create_device_basic(base_url):
 
     # Cleanup
     device_id = data["device_id"]
-    http_client.delete(f"{base_url}/devices/{device_id}")
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_create_device_unauthorized(base_url):
+    """Test creating a device without authentication should fail"""
+    device_data = {
+        "name": generate_unique_device_name("Test Device Unauthorized"),
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "ground_cover": "earth",
+        "orientation": "north",
+        "shading": 0,
+        "tags": []
+    }
+
+    response = http_client.post(f"{base_url}/devices", json=device_data)
+    debug_response_if_not_2xx(response)
+    assert response.status_code == 401  # Unauthorized
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -77,7 +98,8 @@ def test_create_device_with_tags(base_url):
         "tags": ["urban", "sensor"]
     }
 
-    response = http_client.post(f"{base_url}/devices", json=device_data)
+    response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 201
     data = response.json()
@@ -86,7 +108,8 @@ def test_create_device_with_tags(base_url):
 
     # Cleanup
     device_id = data["device_id"]
-    http_client.delete(f"{base_url}/devices/{device_id}")
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -106,7 +129,8 @@ def test_create_device_missing_required_fields(base_url):
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_devices_no_filters(base_url):
     """Test getting all devices without filters"""
-    response = http_client.get(f"{base_url}/devices")
+    response = http_client.get(
+        f"{base_url}/devices", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -119,7 +143,8 @@ def test_get_devices_no_filters(base_url):
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_get_devices_with_pagination(base_url):
     """Test getting devices with pagination"""
-    response = http_client.get(f"{base_url}/devices?limit=5&page=1")
+    response = http_client.get(
+        f"{base_url}/devices?limit=5&page=1", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -141,7 +166,7 @@ def test_get_devices_with_pagination(base_url):
 def test_get_devices_with_filters(base_url):
     """Test getting devices with enum filters"""
     response = http_client.get(
-        f"{base_url}/devices?ground_cover=grass&orientation=north")
+        f"{base_url}/devices?ground_cover=grass&orientation=north", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -154,7 +179,7 @@ def test_get_devices_with_filters(base_url):
 def test_get_devices_with_sorting(base_url):
     """Test getting devices with sorting"""
     response = http_client.get(
-        f"{base_url}/devices?sort_by=name&sort_order=asc")
+        f"{base_url}/devices?sort_by=name&sort_order=asc", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -177,14 +202,16 @@ def test_get_device_by_id(base_url):
         "tags": []
     }
 
-    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
     device_id = created_device["device_id"]
 
     # Get the device by ID
-    response = http_client.get(f"{base_url}/devices/{device_id}")
+    response = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -192,7 +219,8 @@ def test_get_device_by_id(base_url):
     assert data["name"] == device_data["name"]
 
     # Cleanup
-    http_client.delete(f"{base_url}/devices/{device_id}")
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -240,7 +268,8 @@ def test_update_device(base_url):
         "tags": ["test"]
     }
 
-    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
@@ -258,7 +287,7 @@ def test_update_device(base_url):
     }
 
     response = http_client.put(
-        f"{base_url}/devices/{device_id}", json=update_data)
+        f"{base_url}/devices/{device_id}", json=update_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
     data = response.json()
@@ -269,7 +298,8 @@ def test_update_device(base_url):
     assert len(data["tags"]) == 2
 
     # Cleanup
-    http_client.delete(f"{base_url}/devices/{device_id}")
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -305,7 +335,8 @@ def test_update_device_invalid_enum(base_url):
         "tags": []
     }
 
-    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
@@ -328,7 +359,8 @@ def test_update_device_invalid_enum(base_url):
     assert response.status_code == 422  # Validation error
 
     # Cleanup
-    http_client.delete(f"{base_url}/devices/{device_id}")
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -345,19 +377,22 @@ def test_delete_device(base_url):
         "tags": []
     }
 
-    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
     device_id = created_device["device_id"]
 
     # Delete the device
-    response = http_client.delete(f"{base_url}/devices/{device_id}")
+    response = http_client.delete(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
     assert response.status_code == 200
 
     # Verify device is deleted
-    get_response = http_client.get(f"{base_url}/devices/{device_id}")
+    get_response = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(get_response)
     assert get_response.status_code == 404
 
@@ -386,7 +421,7 @@ def test_create_device_duplicate_name(base_url):
 
     # Create first device
     create_response1 = http_client.post(
-        f"{base_url}/devices", json=device_data)
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response1)
     assert create_response1.status_code == 201
     device_id1 = create_response1.json()["device_id"]
@@ -398,7 +433,8 @@ def test_create_device_duplicate_name(base_url):
     assert create_response2.status_code == 409  # Conflict
 
     # Cleanup
-    http_client.delete(f"{base_url}/devices/{device_id1}")
+    http_client.delete(f"{base_url}/devices/{device_id1}",
+                       headers=get_auth_headers_for_test())
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
@@ -416,7 +452,8 @@ def test_device_tag_relationships_crud(base_url):
         "tags": ["urban", "sensor"]
     }
 
-    create_response = http_client.post(f"{base_url}/devices", json=device_data)
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(create_response)
     assert create_response.status_code == 201
     created_device = create_response.json()
@@ -424,7 +461,8 @@ def test_device_tag_relationships_crud(base_url):
     assert len(created_device["tags"]) == 2
 
     # Read device and verify tags
-    get_response = http_client.get(f"{base_url}/devices/{device_id}")
+    get_response = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(get_response)
     assert get_response.status_code == 200
     get_data = get_response.json()
@@ -442,18 +480,20 @@ def test_device_tag_relationships_crud(base_url):
     }
 
     update_response = http_client.put(
-        f"{base_url}/devices/{device_id}", json=update_data)
+        f"{base_url}/devices/{device_id}", json=update_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(update_response)
     assert update_response.status_code == 200
     updated_device = update_response.json()
     assert len(updated_device["tags"]) == 3
 
     # Delete device (should also remove tag relationships)
-    delete_response = http_client.delete(f"{base_url}/devices/{device_id}")
+    delete_response = http_client.delete(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(delete_response)
     assert delete_response.status_code == 200
 
     # Verify device is deleted
-    get_response2 = http_client.get(f"{base_url}/devices/{device_id}")
+    get_response2 = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(get_response2)
     assert get_response2.status_code == 404

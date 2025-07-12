@@ -66,9 +66,16 @@ quandeploy() {
     }
     print_checkmarks "DB migrations done"
 
+    echo "📦 Bootstrap test users in DB..."
+    python project/app/bootstrap_test_users.py || {
+        echo "❌ Bootstrap script failed."
+        return 1
+    }
+    print_checkmarks "Bootstrap script executed"
+
     echo "⏱️ Waiting a moment for services to stabilize..."
     # Parameters
-    NUM_OS=${1:-20}         # num of  "o"s
+    NUM_OS=${1:-10 }         # num of  "o"s
     DELAY=${2:-0.05}        # seconds between prints
 
     progress=""

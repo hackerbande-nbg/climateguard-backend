@@ -101,7 +101,7 @@ async def create_test_user(connection):
             TEST_USER_CONFIG['created_at']
         )
 
-        print(f"✅ Test user created successfully:")
+        print("✅ Test user created successfully:")
         print(f"   User ID: {result['user_id']}")
         print(f"   Username: {result['username']}")
 
@@ -121,16 +121,17 @@ async def register_test_user(connection, user_id):
 
     update_query = """
     UPDATE "user" 
-    SET api_key_hash = $1, 
-        api_key_salt = $2, 
-        is_active = true, 
-        is_registered = true, 
+    SET api_key_hash = $1,
+        api_key_salt = $2,
+        is_active = true,
+        is_registered = true,
         registered_at = $3
     WHERE user_id = $4
     RETURNING user_id, username, is_registered, is_active
     """
 
     try:
+
         result = await connection.fetchrow(
             update_query,
             api_key_hash,
@@ -139,7 +140,7 @@ async def register_test_user(connection, user_id):
             user_id
         )
 
-        print(f"✅ Test user registered successfully:")
+        print("✅ Test user registered successfully:")
         print(f"   User ID: {result['user_id']}")
         print(f"   Username: {result['username']}")
         print(f"   API Key: {TEST_USER_CONFIG['api_key']}")
@@ -179,7 +180,7 @@ async def main():
             created_user = await create_test_user(connection)
 
             # Register the test user
-            print(f"🔐 Registering test user...")
+            print("🔐 Registering test user...")
             await register_test_user(connection, created_user['user_id'])
 
         print("\n✅ Bootstrap completed successfully!")
