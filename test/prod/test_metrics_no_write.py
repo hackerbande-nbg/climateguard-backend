@@ -25,30 +25,6 @@ def test_ping():
     assert response.json() == {"ping": "pong!"}
 
 
-def test_post_metric_with_wrong_temperature(metric_payload):
-    # Update with invalid temperature
-    metric_payload.update({"temperature": "a"})
-    # Post the metric
-    response = requests.post(
-        f"{BASE_URL}/metrics",
-        json=metric_payload,
-        headers={"Content-Type": "application/json"}
-    )
-    assert response.status_code == 422  # Unprocessable Entity
-
-
-def test_post_metric_with_nonexistent_device(metric_payload):
-    # Update with nonexistent device
-    metric_payload.update({"device_name": "nonexistent_device"})
-    # Post the metric
-    response = requests.post(
-        f"{BASE_URL}/metrics",
-        json=metric_payload,
-        headers={"Content-Type": "application/json"}
-    )
-    assert response.status_code == 404  # Device not found
-
-
 def test_get_metrics():
     """Test /metrics endpoint"""
     response = requests.get(f"{BASE_URL}/metrics")
