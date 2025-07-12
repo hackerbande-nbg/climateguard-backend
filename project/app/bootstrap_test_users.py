@@ -38,8 +38,6 @@ TEST_USER_CONFIG = {
     'created_at': datetime.utcnow()
 }
 
-DB_PORT = int(os.getenv('DB_PORT'))  # Default to 5432 if not set
-
 
 async def get_database_connection():
     """Create database connection from environment variables"""
@@ -49,8 +47,8 @@ async def get_database_connection():
         'user': os.getenv('POSTGRES_USER'),
         'password': os.getenv('POSTGRES_PW'),
         'database': os.getenv('POSTGRES_DB'),
-        'host': os.getenv('POSTGRES_DNS', 'localhost'),
-        'port': DB_PORT
+        'host': 'localhost',
+        'port': int(os.getenv('DB_PORT'))
     }
 
     print(
