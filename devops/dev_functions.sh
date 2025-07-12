@@ -66,10 +66,17 @@ quandeploy() {
     }
     print_checkmarks "DB migrations done"
 
+    echo "📦 Bootstrap test users in DB..."
+    python project/app/bootstrap_test_users.py || {
+        echo "❌ Bootstrap script failed."
+        return 1
+    }
+    print_checkmarks "Bootstrap script executed"
+
     echo "⏱️ Waiting a moment for services to stabilize..."
     # Parameters
-    NUM_OS=${1:-20}         # num of  "o"s
-    DELAY=${2:-0.1}        # seconds between prints
+    NUM_OS=${1:-10 }         # num of  "o"s
+    DELAY=${2:-0.05}        # seconds between prints
 
     progress=""
     for ((i=1; i<=NUM_OS; i++)); do
@@ -81,7 +88,7 @@ quandeploy() {
     echo ""
     echo ""
     echo "🧪 Running tests..."
-    python3 -m pytest -n 4 --tb=short --quiet
+    python3 -m pytest -n 1 --tb=short --color=no
     test_exit_code=$?
     
     if [ $test_exit_code -ne 0 ]; then

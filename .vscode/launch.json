@@ -62,6 +62,18 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false
+        },
+        {
+            "name": "Debug Bootstrap Script",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/project/app/bootstrap_test_users.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/project"
+            },
+            "args": []
         }
     ]
 }

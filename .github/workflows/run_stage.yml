@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   workflow_dispatch:
 
 jobs:
@@ -44,6 +45,10 @@ jobs:
       - name: Run database migrations
         run: |
           docker exec quantum_web_stage alembic upgrade head
+
+      - name: Run user bootstrap script
+        run: |
+          python3 project/app/bootstrap_test_users.py
 
       - name: Run integration tests
         run: |

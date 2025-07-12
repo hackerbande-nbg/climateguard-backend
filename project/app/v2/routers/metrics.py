@@ -8,6 +8,7 @@ import re
 
 from app.db import get_session
 from app.models import SensorMetric, Device
+from app.dependencies import require_auth
 
 router = APIRouter()
 
@@ -61,7 +62,7 @@ async def get_metrics(
         1, ge=1, description="Page number for pagination (starts from 1)"),
     session: AsyncSession = Depends(get_session)
 ):
-    """Get sensor metrics with optional date filtering and pagination"""
+    """Get sensor metrics with optional date filtering and pagination - PUBLIC ENDPOINT"""
 
     # Build the base query for counting
     count_query = select(func.count(SensorMetric.id))
@@ -134,10 +135,17 @@ async def get_metrics(
         )
 
 
-@router.post("/metrics")
+@router.post("/metrics",
+             summary="Create sensor metric",
+             description="""
+    Create a new sensor metric by device name.
+    
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
+    """)
 async def create_metric(
     metric_data: CreateMetricRequest,
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Create a new sensor metric by device name"""
 

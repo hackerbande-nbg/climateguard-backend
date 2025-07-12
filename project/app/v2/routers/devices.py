@@ -8,11 +8,14 @@ from pydantic import BaseModel
 from app.db import get_session
 from app.models import Device, Tag, DeviceTagLink
 from app.schemas import DeviceCreate, DeviceRead, DeviceUpdate, TagRead
+from app.dependencies import require_auth
 
 router = APIRouter(
     prefix="/devices",
     tags=["devices"],
     responses={
+        401: {"description": "Authentication required"},
+        403: {"description": "Access forbidden"},
         404: {"description": "Device not found"},
         422: {"description": "Validation error"},
         409: {"description": "Conflict - duplicate device name"},
@@ -32,6 +35,8 @@ class PaginatedDevicesResponse(BaseModel):
             summary="List devices with filtering and pagination",
             description="""
     Retrieve a paginated list of devices with optional filtering capabilities.
+    
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
     
     **Filtering Options:**
     - **name**: Partial match on device name (case-insensitive)
@@ -88,7 +93,8 @@ async def get_devices(
         description="Filter by specific tag name",
         example="outdoor"
     ),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Get devices with optional filtering and pagination"""
 
@@ -191,6 +197,8 @@ async def get_devices(
             description="""
     Retrieve a specific device by its unique ID along with associated tags.
     
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
+    
     **Device ID Constraints:**
     - Must be between 1 and 1,000,000
     - Returns 404 if device does not exist
@@ -230,7 +238,8 @@ async def get_device(
         ge=1,
         le=1000000
     ),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Get a specific device with tags"""
     # Check for out of bounds device ID
@@ -282,6 +291,8 @@ async def get_device(
              summary="Create a new device",
              description="""
     Create a new device with optional tags and configuration.
+    
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
     
     **Required Fields:**
     - **name**: Unique device name
@@ -353,7 +364,8 @@ async def create_device(
             "tags": ["outdoor", "weather", "research"]
         }
     ),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Create a new device with tags"""
 
@@ -442,6 +454,8 @@ async def create_device(
             description="""
     Update an existing device. Only provided fields will be updated.
     
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
+    
     **Updateable Fields:**
     - All device configuration fields
     - Device name (must remain unique)
@@ -472,7 +486,8 @@ async def update_device(
             "tags": ["outdoor", "updated", "monitoring"]
         }
     ),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Update a device"""
 
@@ -572,6 +587,8 @@ async def update_device(
                description="""
     Permanently delete a device and all its associated data.
     
+    **⚠️ Authentication Required:** Valid API key in X-API-Key header or Authorization Bearer token
+    
     **Warning:** This action cannot be undone and will:
     - Remove the device record
     - Remove all tag associations
@@ -601,7 +618,8 @@ async def delete_device(
         ge=1,
         le=1000000
     ),
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(require_auth)
 ):
     """Delete a device"""
     # Check for out of bounds device ID
