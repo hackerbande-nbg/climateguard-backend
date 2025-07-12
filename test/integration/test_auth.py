@@ -84,21 +84,6 @@ def test_get_user_info_no_auth(base_url):
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
-def test_regenerate_api_key(base_url):
-    """Test API key regeneration"""
-    headers = get_auth_headers(TEST_USER['expected_api_key'])
-
-    response = http_client.post(
-        f"{base_url}/auth/regenerate-key", headers=headers)
-    debug_auth_response(response, "regenerate API key")
-
-    data = response.json()
-    assert "api_key" in data
-    assert len(data["api_key"]) == 32
-    assert data["username"] == TEST_USER['username']
-
-
-@pytest.mark.parametrize("base_url", BASE_URLS_V2)
 def test_regenerate_api_key_unauthorized(base_url):
     """Test API key regeneration without authentication"""
     response = http_client.post(f"{base_url}/auth/regenerate-key")

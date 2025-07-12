@@ -26,7 +26,7 @@ def debug_response_if_not_2xx(response):
 
 def get_auth_headers_for_test():
     """Get authentication headers for test requests"""
-    return get_auth_headers(TEST_USER['expected_api_key'])
+    return get_auth_headers(TEST_USER['X-API-Key'])
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)

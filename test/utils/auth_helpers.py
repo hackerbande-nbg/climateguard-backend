@@ -19,9 +19,9 @@ load_dotenv(project_root / '.env')
 
 # Test user configuration from environment variables
 TEST_USER = {
-    'username': os.getenv('TEST_USER_NAME', 'test_user'),
-    'email': f"{os.getenv('TEST_USER_NAME', 'test_user')}@example.com",
-    'expected_api_key': os.getenv('TEST_USER_PW', 'aslkdhl2389042230asdhl')
+    'username': os.getenv('TEST_USER_NAME'),
+    'email': f"{os.getenv('TEST_USER_NAME')}@example.com",
+    'X-API-Key': os.getenv('TEST_USER_PW')
 }
 
 # Global variable to store the actual API key after registration

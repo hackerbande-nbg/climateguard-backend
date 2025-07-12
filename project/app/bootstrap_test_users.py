@@ -32,7 +32,7 @@ load_dotenv(project_root / '.env')
 TEST_USER_CONFIG = {
     'username': os.getenv('TEST_USER_NAME', 'test_user'),
     'email': f"{os.getenv('TEST_USER_NAME', 'test_user')}@example.com",
-    'api_key': os.getenv('TEST_USER_PW', 'aslkdhl2389042230asdhl'),
+    'api_key': os.getenv('TEST_USER_PW'),
     'is_active': False,
     'is_registered': False,
     'created_at': datetime.utcnow()

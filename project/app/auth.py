@@ -86,12 +86,8 @@ def is_valid_api_key_format(api_key: str) -> bool:
     if not api_key:
         return False
 
-    # Check length (should be 32 characters)
-    if len(api_key) != 32:
-        return False
-
     # Check if contains only valid URL-safe characters
     # (alphanumeric plus - and _)
     valid_chars = set(
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_')
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
     return all(c in valid_chars for c in api_key)
