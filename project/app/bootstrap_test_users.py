@@ -41,7 +41,7 @@ TEST_USER_CONFIG = {
 
 async def get_database_connection():
     """Create database connection from environment variables"""
-
+    print(os.getenv('DB_PORT'))
     # Read database configuration from .env
     db_config = {
         'user': os.getenv('POSTGRES_USER'),
