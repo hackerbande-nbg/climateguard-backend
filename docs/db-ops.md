@@ -15,3 +15,7 @@ WHERE datname = 'foo' AND pid <> pg_backend_pid();
 ## Connect to prod DB
 
 ssh -L 5433:localhost:5432 $USER@quan
+
+## set new pw
+
+psql -h localhost -p 5431 -d postgres -U postgres -c "ALTER USER postgres WITH PASSWORD '237894nd';"

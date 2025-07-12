@@ -40,6 +40,10 @@ jobs:
         run: |
           docker exec quantum_web_prod alembic upgrade head
 
+      - name: Run user bootstrap script
+        run: |
+          python3 project/app/bootstrap_test_users.py
+          
       - name: Run prod tests
         run: |
           echo "Running production tests..."
