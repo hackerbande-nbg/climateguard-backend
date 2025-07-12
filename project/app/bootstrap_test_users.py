@@ -50,19 +50,19 @@ async def get_database_connection():
         'password': os.getenv('POSTGRES_PW'),
         'database': os.getenv('POSTGRES_DB'),
         'host': os.getenv('POSTGRES_DNS', 'localhost'),
-        'port': DB_PORT)
+        'port': DB_PORT
     }
 
     print(
         f"🔌 Connecting to database: {db_config['user']}@{db_config['host']}:{db_config['port']}/{db_config['database']}")
 
     try:
-        connection= await asyncpg.connect(
-            user = db_config['user'],
-            password = db_config['password'],
-            database = db_config['database'],
-            host = db_config['host'],
-            port = db_config['port']
+        connection = await asyncpg.connect(
+            user=db_config['user'],
+            password=db_config['password'],
+            database=db_config['database'],
+            host=db_config['host'],
+            port=db_config['port']
         )
         print("✅ Database connection successful")
         return connection
@@ -74,10 +74,10 @@ async def get_database_connection():
 async def check_user_exists(connection, username):
     """Check if user already exists in database"""
 
-    query= "SELECT user_id, username, is_registered, is_active FROM \"user\" WHERE username = $1"
+    query = "SELECT user_id, username, is_registered, is_active FROM \"user\" WHERE username = $1"
 
     try:
-        result= await connection.fetchrow(query, username)
+        result = await connection.fetchrow(query, username)
         return result
     except Exception as e:
         print(f"❌ Error checking user existence: {e}")
@@ -87,14 +87,14 @@ async def check_user_exists(connection, username):
 async def create_test_user(connection):
     """Create test user in database"""
 
-    insert_query= """
+    insert_query = """
     INSERT INTO "user" (username, email, is_active, is_registered, created_at)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING user_id, username
     """
 
     try:
-        result= await connection.fetchrow(
+        result = await connection.fetchrow(
             insert_query,
             TEST_USER_CONFIG['username'],
             TEST_USER_CONFIG['email'],
@@ -118,10 +118,10 @@ async def register_test_user(connection, user_id):
     """Register test user with predefined API key"""
 
     # Generate salt and hash for the predefined API key
-    salt= generate_salt()
-    api_key_hash= hash_api_key(TEST_USER_CONFIG['api_key'], salt)
+    salt = generate_salt()
+    api_key_hash = hash_api_key(TEST_USER_CONFIG['api_key'], salt)
 
-    update_query= """
+    update_query = """
     UPDATE "user"
     SET api_key_hash = $1,
         api_key_salt = $2,
@@ -134,7 +134,7 @@ async def register_test_user(connection, user_id):
 
     try:
 
-        result= await connection.fetchrow(
+        result = await connection.fetchrow(
             update_query,
             api_key_hash,
             salt,
@@ -162,11 +162,11 @@ async def main():
     print("🚀 Bootstrap Test User Script")
 
     # Connect to database
-    connection= await get_database_connection()
+    connection = await get_database_connection()
 
     try:
         # Check if test user already exists
-        existing_user= await check_user_exists(connection, TEST_USER_CONFIG['username'])
+        existing_user = await check_user_exists(connection, TEST_USER_CONFIG['username'])
 
         if existing_user:
             print(
@@ -179,7 +179,7 @@ async def main():
         else:
             # Create test user
             print(f"📝 Creating test user '{TEST_USER_CONFIG['username']}'...")
-            created_user= await create_test_user(connection)
+            created_user = await create_test_user(connection)
 
             # Register the test user
             print("🔐 Registering test user...")
