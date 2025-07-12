@@ -93,8 +93,7 @@ async def get_devices(
         description="Filter by specific tag name",
         example="outdoor"
     ),
-    session: AsyncSession = Depends(get_session),
-    current_user=Depends(require_auth)
+    session: AsyncSession = Depends(get_session)
 ):
     """Get devices with optional filtering and pagination"""
 
@@ -238,8 +237,7 @@ async def get_device(
         ge=1,
         le=1000000
     ),
-    session: AsyncSession = Depends(get_session),
-    current_user=Depends(require_auth)
+    session: AsyncSession = Depends(get_session)
 ):
     """Get a specific device with tags"""
     # Check for out of bounds device ID
