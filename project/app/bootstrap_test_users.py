@@ -45,7 +45,7 @@ async def get_database_connection():
     # Read database configuration from .env
     db_config = {
         'user': os.getenv('POSTGRES_USER', 'postgres'),
-        'password': os.getenv('POSTGRES_PW', 'postgres'),
+        'password': os.getenv('POSTGRES_PW'),
         'database': os.getenv('POSTGRES_DB', 'quantum'),
         'host': os.getenv('POSTGRES_DNS', 'localhost'),
         'port': int(os.getenv('DB_PORT', '5432'))
