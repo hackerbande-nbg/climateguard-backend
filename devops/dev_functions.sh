@@ -67,7 +67,7 @@ quandeploy() {
     print_checkmarks "DB migrations done"
 
     echo "📦 Bootstrap test users in DB..."
-    python project/app/bootstrap_test_users.py || {
+    python3 project/app/bootstrap_test_users.py || {
         echo "❌ Bootstrap script failed."
         return 1
     }
