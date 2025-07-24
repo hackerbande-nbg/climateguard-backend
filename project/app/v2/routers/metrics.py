@@ -10,7 +10,7 @@ from app.db import get_session
 from app.models import SensorMetric, Device
 from app.dependencies import require_auth
 
-router = APIRouter()
+router = APIRouter(tags=["metrics"])
 
 
 class PaginatedMetricsResponse(BaseModel):
