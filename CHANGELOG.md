@@ -1,3 +1,13 @@
+# 2.3.0
+
+- add air_pressure field
+- [docs/changes/air_pressure.md](docs/changes/air_pressure.md)
+
+# 2.2.0
+
+- add auth
+- [docs/changes/auth.md](docs/changes/auth.md)
+
 # 2.1.0
 
 - add /metrics endpoint with date filtering and limits
