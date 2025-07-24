@@ -82,6 +82,7 @@ class SensorMetric(SQLModel, table=True):
     timestamp_server: Optional[int] = None
     temperature: Optional[float] = None
     humidity: Optional[float] = None
+    air_pressure: Optional[float] = None
     device_id: Optional[int] = Field(
         default=None, foreign_key="device.device_id")
 
