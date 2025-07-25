@@ -27,7 +27,6 @@ class CreateMetricRequest(BaseModel):
     temperature: Optional[float] = None
     humidity: Optional[float] = None
     air_pressure: Optional[float] = None
-    battery_voltage: Optional[float] = None
 
 
 def parse_date_parameter(date_str: str) -> int:
@@ -169,8 +168,7 @@ async def create_metric(
         timestamp_server=metric_data.timestamp_server,
         temperature=metric_data.temperature,
         humidity=metric_data.humidity,
-        air_pressure=metric_data.air_pressure,
-        battery_voltage=metric_data.battery_voltage
+        air_pressure=metric_data.air_pressure
     )
 
     session.add(new_metric)

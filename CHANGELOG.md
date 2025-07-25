@@ -1,8 +1,3 @@
-# 2.4.0
-
-- add battery_voltage field
-- [docs/changes/battery_voltage.md](docs/changes/battery_voltage.md)
-
 # 2.3.0
 
 - add air_pressure field

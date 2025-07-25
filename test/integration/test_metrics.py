@@ -147,7 +147,6 @@ def test_create_metric_with_auth(base_url):
         "temperature": 22.5,
         "humidity": 65.0,
         "air_pressure": 1013.25,  # Standard atmospheric pressure
-        "battery_voltage": 3.7,  # Typical Li-ion battery voltage
         "timestamp_device": 1617184800,
         "timestamp_server": 1617184805
     }
@@ -168,8 +167,10 @@ def test_create_metric_unauthorized(base_url):
     """Test creating a metric without authentication should fail"""
     metric_data = {
         "device_name": "test_device",
-        "temperature": 22.5,
-        "humidity": 65.0
+        "temperature": 18.0,
+        "humidity": 55.0,
+        "timestamp_device": 1617185000,
+        "timestamp_server": 1617185005
     }
 
     response = http_client.post(f"{base_url}/metrics", json=metric_data)
