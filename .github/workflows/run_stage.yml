@@ -42,10 +42,6 @@ jobs:
         run: |
           docker compose -p quantum_stage -f docker-compose.yml up -d --build
 
-      - name: Create database migrations
-        run: |
-          docker exec quantum_web_stage alembic revision --autogenerate -m "Auto migration"
-
       - name: Run database migrations
         run: |
           docker exec quantum_web_stage alembic upgrade head
