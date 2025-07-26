@@ -36,6 +36,10 @@ jobs:
           docker compose -p quantum_prod -f docker-compose.yml down
           docker compose -p quantum_prod -f docker-compose.yml up -d --build
 
+      - name: Create database migrations
+        run: |
+          docker exec quantum_web_prod alembic revision --autogenerate -m "Auto migration"
+
       - name: Run database migrations
         run: |
           docker exec quantum_web_prod alembic upgrade head
