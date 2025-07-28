@@ -4,8 +4,6 @@ services:
     container_name: quantum_web_${QUANTUM_ENV}
     build: ./project
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
-    volumes:
-      - ./project:/usr/src/app
     ports:
       - ${FASTAPI_PORT}:8000
     environment:
