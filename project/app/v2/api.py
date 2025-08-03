@@ -24,8 +24,8 @@ app.add_middleware(
         "http://nuernbergklima.de",
         "https://nürnbergklima.de",
         "http://nürnbergklima.de",
-        "https://xn--nrnbergklima-dlb.de/",
-        "http://xn--nrnbergklima-dlb.de/"
+        "https://xn--nrnbergklima-dlb.de",
+        "http://xn--nrnbergklima-dlb.de"
     ],
     allow_credentials=True,
     allow_methods=["*"],
