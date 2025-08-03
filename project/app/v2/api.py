@@ -19,7 +19,13 @@ app.add_middleware(
         "https://quantum.hackerban.de",
         "https://api.quantum.hackerban.de",
         "http://quantum.hackerban.de",
-        "http://api.quantum.hackerban.de"
+        "http://api.quantum.hackerban.de",
+        "https://nuernbergklima.de",
+        "http://nuernbergklima.de",
+        "https://nürnbergklima.de",
+        "http://nürnbergklima.de",
+        "https://xn--nrnbergklima-dlb.de/",
+        "http://xn--nrnbergklima-dlb.de/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
