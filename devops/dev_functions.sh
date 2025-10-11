@@ -88,7 +88,7 @@ quandeploy() {
     echo ""
     echo ""
     echo "🧪 Running tests..."
-    python3 -m pytest -n 1 --tb=short --color=no
+    python3 -m pytest -n 4 --tb=short --color=no
     test_exit_code=$?
     
     if [ $test_exit_code -ne 0 ]; then

@@ -57,6 +57,8 @@ see also devops/dev_functions.sh
 1. generate alembic migration
     ```sh
     docker exec quantum_web_dev alembic revision --autogenerate -m "YOUR_NAME"
+    copy the migration from the container to the local filesystem, e.g.
+    docker cp quantum_web_dev:/usr/src/app/migrations/versions/. ./project/migrations/versions/
     ```
 1. check if the migration looks good (with your eyes on code)
 
@@ -109,3 +111,41 @@ Process for local debugging:
    - This will run the integration tests against the local FastAPI instance
 
 **Note**: Make sure the database is running on localhost:5432 before starting the debuggers. The launch configurations are set up with the necessary environment variables for local development.
+
+
+# Addint a new field to DB and make it available
+
+- go to main branch
+- delete the dev branch (this one is connected to the CI pipeline)
+- reset the DB volume of quantum to have a blank slate
+```
+docker volume rm $(docker volume ls -q)
+```
+
+- test that current env works without change
+```
+quandeploy
+```
+
+- make sure that everything ramps up properly
+- add the field to the project/app/models.py
+- generate a migration
+```
+ docker exec quantum_web_dev alembic revision --autogenerate -m "add optional comment"
+```
+- copy the migration from the container to the local filesystem, e.g.
+```
+docker cp quantum_web_dev:/usr/src/app/migrations/versions/. ./project/migrations/versions/
+```
+- update the data model
+```
+docker exec quantum_web_dev alembic upgrade head
+```
+
+- adjust api calls in project/app/v***
+- adjust schema objects in project/app/schemas.py
+- adjust tests in test/integration and/or tests/prod
+- do a deployment
+```
+quandeploy
+```
