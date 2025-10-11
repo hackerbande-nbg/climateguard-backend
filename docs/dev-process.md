@@ -173,7 +173,13 @@ Make the following changes to expose your new field:
 - **Schemas**: Modify schema objects in `project/app/schemas.py`
 - **Tests**: Update tests in `test/integration/` and/or `test/prod/`
 
-### 8. Deploy and Test
+### 7. bump the API version properly
+Upda the API version according to semantic versioning
+
+- **API version**: Update relevant endpoints in `project/app/v***`
+
+
+### 9. Deploy and Test
 Run a complete deployment to verify everything works:
 ```bash
 quandeploy
