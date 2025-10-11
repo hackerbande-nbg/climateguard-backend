@@ -1,3 +1,7 @@
+# 2.5.0
+
+- add device comment field
+
 # 2.4.0
 
 - add battery_voltage field
@@ -31,7 +35,6 @@
 - add redoc endpoint https://api.quantum.hackerban.de/v2/redoc
 - beautify the deploy script devops/dev_functions.sh /to be replaced by uv native commands)
 - add test env creation scripts that creates randomly entries at test/manual/create_test_metrics.py
-
 
 # 1.0.0
 
