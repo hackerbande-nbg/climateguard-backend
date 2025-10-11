@@ -109,3 +109,20 @@ Process for local debugging:
    - This will run the integration tests against the local FastAPI instance
 
 **Note**: Make sure the database is running on localhost:5432 before starting the debuggers. The launch configurations are set up with the necessary environment variables for local development.
+
+
+# Addint a new field to DB and make it available
+
+- go to main branch
+- delete the dev branch (this one is connected to the CI pipeline)
+- reset the DB volume of quantum to have a blank slate
+```
+docker volume rm $(docker volume ls -q)
+```
+
+- test that current env works without change
+```
+quandeploy
+```
+
+- make sure that everything ramps up properly
