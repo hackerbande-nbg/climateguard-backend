@@ -57,6 +57,8 @@ see also devops/dev_functions.sh
 1. generate alembic migration
     ```sh
     docker exec quantum_web_dev alembic revision --autogenerate -m "YOUR_NAME"
+    copy the migration from the container to the local filesystem, e.g.
+    docker cp quantum_web_dev:/usr/src/app/migrations/versions/. ./project/migrations/versions/
     ```
 1. check if the migration looks good (with your eyes on code)
 
@@ -126,3 +128,24 @@ quandeploy
 ```
 
 - make sure that everything ramps up properly
+- add the field to the project/app/models.py
+- generate a migration
+```
+ docker exec quantum_web_dev alembic revision --autogenerate -m "add optional comment"
+```
+- copy the migration from the container to the local filesystem, e.g.
+```
+docker cp quantum_web_dev:/usr/src/app/migrations/versions/. ./project/migrations/versions/
+```
+- update the data model
+```
+docker exec quantum_web_dev alembic upgrade head
+```
+
+- adjust api calls in project/app/v***
+- adjust schema objects in project/app/schemas.py
+- adjust tests in test/integration and/or tests/prod
+- do a deployment
+```
+quandeploy
+```

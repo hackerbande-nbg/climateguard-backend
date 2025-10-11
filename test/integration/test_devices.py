@@ -47,6 +47,7 @@ def test_create_device_basic(base_url):
         "ground_cover": "earth",
         "orientation": "north",
         "shading": 0,   # 0 - full sun, 100 - full shade
+        "comment": "Basic test device",
         "tags": []
     }
 
@@ -58,6 +59,7 @@ def test_create_device_basic(base_url):
     assert data["name"] == device_data["name"]
     assert data["latitude"] == device_data["latitude"]
     assert data["longitude"] == device_data["longitude"]
+    assert data["comment"] == device_data["comment"]
     assert "device_id" in data
     assert "created_at" in data
 
@@ -95,6 +97,7 @@ def test_create_device_with_tags(base_url):
         "ground_cover": "concrete",
         "orientation": "south",
         "shading": 100,
+        "comment": "Device with tags for testing",
         "tags": ["urban", "sensor"]
     }
 
@@ -104,6 +107,7 @@ def test_create_device_with_tags(base_url):
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == device_data["name"]
+    assert data["comment"] == device_data["comment"]
     assert len(data["tags"]) == 2
 
     # Cleanup
@@ -449,6 +453,7 @@ def test_device_tag_relationships_crud(base_url):
         "ground_cover": "grass",
         "orientation": "north",
         "shading": 0,
+        "comment": "Device for CRUD tag testing",
         "tags": ["urban", "sensor"]
     }
 
@@ -459,6 +464,7 @@ def test_device_tag_relationships_crud(base_url):
     created_device = create_response.json()
     device_id = created_device["device_id"]
     assert len(created_device["tags"]) == 2
+    assert created_device["comment"] == device_data["comment"]
 
     # Read device and verify tags
     get_response = http_client.get(
@@ -467,6 +473,7 @@ def test_device_tag_relationships_crud(base_url):
     assert get_response.status_code == 200
     get_data = get_response.json()
     assert len(get_data["tags"]) == 2
+    assert get_data["comment"] == device_data["comment"]
 
     # Update device with different tags
     update_data = {
@@ -476,6 +483,7 @@ def test_device_tag_relationships_crud(base_url):
         "ground_cover": "concrete",
         "orientation": "south",
         "shading": 0,
+        "comment": "Updated device comment for CRUD testing",
         "tags": ["outdoor", "active", "scheduled"]
     }
 
@@ -485,6 +493,7 @@ def test_device_tag_relationships_crud(base_url):
     assert update_response.status_code == 200
     updated_device = update_response.json()
     assert len(updated_device["tags"]) == 3
+    assert updated_device["comment"] == update_data["comment"]
 
     # Delete device (should also remove tag relationships)
     delete_response = http_client.delete(
@@ -497,3 +506,82 @@ def test_device_tag_relationships_crud(base_url):
         f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(get_response2)
     assert get_response2.status_code == 404
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_device_comment_field_crud(base_url):
+    """Test complete CRUD operations specifically for the comment field"""
+    # Create device with comment
+    dev_name = generate_unique_device_name("Test Device Comment CRUD")
+    original_comment = "This is the original comment for testing purposes"
+    device_data = {
+        "name": dev_name,
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "ground_cover": "grass",
+        "orientation": "north",
+        "shading": 25,
+        "comment": original_comment,
+        "tags": ["comment-test"]
+    }
+
+    # Create device
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(create_response)
+    assert create_response.status_code == 201
+    created_device = create_response.json()
+    device_id = created_device["device_id"]
+    assert created_device["comment"] == original_comment
+
+    # Read device and verify comment persisted
+    get_response = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(get_response)
+    assert get_response.status_code == 200
+    get_data = get_response.json()
+    assert get_data["comment"] == original_comment
+
+    # Update device with new comment
+    updated_comment = "This is the updated comment after modification"
+    update_data = {
+        "name": dev_name,
+        "comment": updated_comment,
+        "shading": 75
+    }
+
+    update_response = http_client.put(
+        f"{base_url}/devices/{device_id}", json=update_data, headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(update_response)
+    assert update_response.status_code == 200
+    updated_device = update_response.json()
+    assert updated_device["comment"] == updated_comment
+    assert updated_device["shading"] == 75
+
+    # Read device again to verify comment was updated
+    get_response2 = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(get_response2)
+    assert get_response2.status_code == 200
+    get_data2 = get_response2.json()
+    assert get_data2["comment"] == updated_comment
+    assert get_data2["shading"] == 75
+
+    # Test updating device without comment field (should preserve existing comment)
+    update_data_no_comment = {
+        "shading": 50
+    }
+
+    update_response2 = http_client.put(
+        f"{base_url}/devices/{device_id}", json=update_data_no_comment, headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(update_response2)
+    assert update_response2.status_code == 200
+    updated_device2 = update_response2.json()
+    assert updated_device2["comment"] == updated_comment  # Should be preserved
+    assert updated_device2["shading"] == 50
+
+    # Cleanup
+    delete_response = http_client.delete(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(delete_response)
+    assert delete_response.status_code == 200

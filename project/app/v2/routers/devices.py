@@ -170,6 +170,7 @@ async def get_devices(
             close_to_water=device.close_to_water,
             orientation=device.orientation,
             distance_to_next_building_cm=device.distance_to_next_building_cm,
+            comment=device.comment,
             tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag)
                   for tag in tags]
         )
@@ -274,6 +275,7 @@ async def get_device(
         close_to_water=device.close_to_water,
         orientation=device.orientation,
         distance_to_next_building_cm=device.distance_to_next_building_cm,
+        comment=device.comment,
         tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag)
               for tag in tags]
     )
@@ -388,7 +390,8 @@ async def create_device(
         close_to_a_tree=device_data.close_to_a_tree,
         close_to_water=device_data.close_to_water,
         orientation=device_data.orientation,
-        distance_to_next_building_cm=device_data.distance_to_next_building_cm
+        distance_to_next_building_cm=device_data.distance_to_next_building_cm,
+        comment=device_data.comment
     )
 
     session.add(new_device)
@@ -438,6 +441,7 @@ async def create_device(
         close_to_water=new_device.close_to_water,
         orientation=new_device.orientation,
         distance_to_next_building_cm=new_device.distance_to_next_building_cm,
+        comment=new_device.comment,
         tags=created_tags
     )
 
@@ -572,6 +576,7 @@ async def update_device(
         close_to_water=device.close_to_water,
         orientation=device.orientation,
         distance_to_next_building_cm=device.distance_to_next_building_cm,
+        comment=device.comment,
         tags=updated_tags
     )
 

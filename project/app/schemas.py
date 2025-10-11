@@ -71,6 +71,7 @@ class DeviceCreate(SQLModel):
     orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = Field(None, ge=0)
     tags: List[str] = []
+    comment: Optional[str] = None
 
 
 class DeviceRead(SQLModel):
@@ -92,6 +93,7 @@ class DeviceRead(SQLModel):
     orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = None
     tags: List[TagRead] = []
+    comment: Optional[str] = None
 
 
 class DeviceUpdate(SQLModel):
@@ -111,3 +113,4 @@ class DeviceUpdate(SQLModel):
     orientation: Optional[str] = None
     distance_to_next_building_cm: Optional[int] = Field(None, ge=0)
     tags: Optional[List[str]] = None
+    comment: Optional[str] = None

@@ -137,3 +137,4 @@ class Device(SQLModel, table=True):
         back_populates="device")
     tags: List[Tag] = Relationship(
         back_populates="devices", link_model=DeviceTagLink)
+    comment: Optional[str] = None
