@@ -117,11 +117,16 @@ Process for local debugging:
 
 This guide walks you through the complete process of adding a new database field and making it available through the API.
 
+check also this commit for an example.
+It has 2 migrations by accident, otherwise its a good example.
+https://github.com/hackerbande-nbg/climateguard-backend/commit/6fd8e7a2576604ed171dbcb08fbda58d68f04f86
+
 ## Prerequisites
 - Ensure you're on the main branch
 - Have a clean development environment
 
 ## Step-by-Step Process
+
 
 ### 1. Prepare Clean Environment
 ```bash
