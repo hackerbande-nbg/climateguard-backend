@@ -45,6 +45,7 @@ class Tag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     category: str
     tag: str
+    comment: Optional[str] = None
 
     # Relationships
     sensor_metrics: List["SensorMetric"] = Relationship(
@@ -98,6 +99,7 @@ class HardwareRevision(SQLModel, table=True):
     specification_repo: Optional[str] = None
     specification_commit: Optional[str] = None
     specification_file_path: Optional[str] = None
+    comment: Optional[str] = None
 
     tags: List[Tag] = Relationship(
         back_populates="hardware_revisions", link_model=HardwareRevisionTagLink)
@@ -107,6 +109,7 @@ class SoftwareVersion(SQLModel, table=True):
     software_id: Optional[int] = Field(default=None, primary_key=True)
     version_name: Optional[str] = None
     git_commit: Optional[str] = None
+    comment: Optional[str] = None
 
     tags: List[Tag] = Relationship(
         back_populates="software_versions", link_model=SoftwareVersionTagLink)
