@@ -1,3 +1,9 @@
+# 2.6.0
+
+- add software revision comment field
+- add hardware revision comment field
+- add tag comment field
+
 # 2.5.0
 
 - add device comment field
