@@ -171,7 +171,7 @@ async def get_devices(
             orientation=device.orientation,
             distance_to_next_building_cm=device.distance_to_next_building_cm,
             comment=device.comment,
-            tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag)
+            tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag, comment=tag.comment)
                   for tag in tags]
         )
         device_reads.append(device_read)
@@ -276,7 +276,7 @@ async def get_device(
         orientation=device.orientation,
         distance_to_next_building_cm=device.distance_to_next_building_cm,
         comment=device.comment,
-        tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag)
+        tags=[TagRead(id=tag.id, category=tag.category, tag=tag.tag, comment=tag.comment)
               for tag in tags]
     )
 
@@ -419,7 +419,7 @@ async def create_device(
             device_id=new_device.device_id, tag_id=tag.id)
         session.add(device_tag_link)
         created_tags.append(
-            TagRead(id=tag.id, category=tag.category, tag=tag.tag))
+            TagRead(id=tag.id, category=tag.category, tag=tag.tag, comment=tag.comment))
 
     await session.commit()
 
@@ -545,7 +545,7 @@ async def update_device(
             device_tag_link = DeviceTagLink(device_id=device_id, tag_id=tag.id)
             session.add(device_tag_link)
             updated_tags.append(
-                TagRead(id=tag.id, category=tag.category, tag=tag.tag))
+                TagRead(id=tag.id, category=tag.category, tag=tag.tag, comment=tag.comment))
     else:
         # Keep existing tags
         tags_query = select(Tag).join(DeviceTagLink).where(
@@ -553,7 +553,7 @@ async def update_device(
         tags_result = await session.execute(tags_query)
         tags = tags_result.scalars().all()
         updated_tags = [
-            TagRead(id=tag.id, category=tag.category, tag=tag.tag) for tag in tags]
+            TagRead(id=tag.id, category=tag.category, tag=tag.tag, comment=tag.comment) for tag in tags]
 
     await session.commit()
     await session.refresh(device)

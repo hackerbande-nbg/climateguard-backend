@@ -585,3 +585,47 @@ def test_device_comment_field_crud(base_url):
         f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(delete_response)
     assert delete_response.status_code == 200
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_tag_comment_field_in_device_responses(base_url):
+    """Test that tag comment field is properly handled in device API responses"""
+    # Create device with tags (comment will be None for new tags)
+    dev_name = generate_unique_device_name("Test Device Tag Comment")
+    device_data = {
+        "name": dev_name,
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "ground_cover": "grass",
+        "orientation": "north",
+        "shading": 0,
+        "comment": "Device for tag comment testing",
+        "tags": ["test-tag", "comment-test"]
+    }
+
+    create_response = http_client.post(
+        f"{base_url}/devices", json=device_data, headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(create_response)
+    assert create_response.status_code == 201
+    created_device = create_response.json()
+    device_id = created_device["device_id"]
+
+    # Verify tags have comment field (should be None for new tags)
+    assert len(created_device["tags"]) == 2
+    for tag in created_device["tags"]:
+        assert "comment" in tag
+        assert tag["comment"] is None  # New tags have no comment
+
+    # Get device and verify tag comment field is included
+    get_response = http_client.get(
+        f"{base_url}/devices/{device_id}", headers=get_auth_headers_for_test())
+    debug_response_if_not_2xx(get_response)
+    assert get_response.status_code == 200
+    get_data = get_response.json()
+
+    for tag in get_data["tags"]:
+        assert "comment" in tag
+
+    # Cleanup
+    http_client.delete(f"{base_url}/devices/{device_id}",
+                       headers=get_auth_headers_for_test())

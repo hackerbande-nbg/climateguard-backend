@@ -180,7 +180,7 @@ async def get_current_user_info(
     tags = tags_result.scalars().all()
 
     user_tags = [TagRead(id=tag.id, category=tag.category,
-                         tag=tag.tag) for tag in tags]
+                         tag=tag.tag, comment=tag.comment) for tag in tags]
 
     return UserRead(
         user_id=current_user.user_id,

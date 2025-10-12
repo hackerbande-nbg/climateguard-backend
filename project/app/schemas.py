@@ -7,12 +7,14 @@ from pydantic import Field
 class TagCreate(SQLModel):
     category: str
     tag: str
+    comment: Optional[str] = None
 
 
 class TagRead(SQLModel):
     id: int
     category: str
     tag: str
+    comment: Optional[str] = None
 
 
 # Authentication Schemas
