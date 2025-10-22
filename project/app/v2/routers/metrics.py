@@ -8,10 +8,14 @@ import re
 
 from app.db import get_session
 from app.models import SensorMetric, SensorMessage, Device
-from app.schemas import CreateMetricRequest, SensorMetricRead
+from app.schemas import CreateMetricRequest, SensorMetricRead, SensorMessageRead
 from app.dependencies import require_auth
 
 router = APIRouter(tags=["metrics"])
+
+# vibe code instructions
+# GET metrics endpoint should be public, no auth required
+# POST metrics endpoint should require auth
 
 
 class PaginatedMetricsResponse(BaseModel):
@@ -102,6 +106,23 @@ async def get_metrics(
             messages_result = await session.execute(messages_query)
             sensor_messages = messages_result.scalars().all()
 
+            # Construct SensorMessageRead objects manually to avoid lazy loading
+            sensor_message_reads = []
+            for msg in sensor_messages:
+                sensor_message_reads.append(SensorMessageRead(
+                    id=msg.id,
+                    gateway_id=msg.gateway_id,
+                    rssi=msg.rssi,
+                    snr=msg.snr,
+                    channel_rssi=msg.channel_rssi,
+                    lora_bandwidth=msg.lora_bandwidth,
+                    lora_spreading_factor=msg.lora_spreading_factor,
+                    lora_coding_rate=msg.lora_coding_rate,
+                    device_id=msg.device_id,
+                    sensor_metric_id=msg.sensor_metric_id,
+                    tags=[]  # TODO: Load tags properly in future iteration
+                ))
+
             metric_read = SensorMetricRead(
                 id=metric.id,
                 timestamp_device=metric.timestamp_device,
@@ -116,19 +137,7 @@ async def get_metrics(
                 f_cnt=metric.f_cnt,
                 frequency=metric.frequency,
                 tags=[],  # TODO: Load tags properly in future iteration
-                sensor_messages=[{
-                    "id": msg.id,
-                    "gateway_id": msg.gateway_id,
-                    "rssi": msg.rssi,
-                    "snr": msg.snr,
-                    "channel_rssi": msg.channel_rssi,
-                    "lora_bandwidth": msg.lora_bandwidth,
-                    "lora_spreading_factor": msg.lora_spreading_factor,
-                    "lora_coding_rate": msg.lora_coding_rate,
-                    "device_id": msg.device_id,
-                    "sensor_metric_id": msg.sensor_metric_id,
-                    "tags": []  # TODO: Load tags properly in future iteration
-                } for msg in sensor_messages]
+                sensor_messages=sensor_message_reads
             )
             metrics_with_messages.append(metric_read)
 
@@ -152,13 +161,57 @@ async def get_metrics(
         result = await session.execute(data_query)
         metrics = result.scalars().all()
 
+        # Convert to SensorMetricRead format to include sensor_messages
+        metrics_with_messages = []
+        for metric in metrics:
+            # Load sensor messages for this metric
+            messages_query = select(SensorMessage).where(
+                SensorMessage.sensor_metric_id == metric.id)
+            messages_result = await session.execute(messages_query)
+            sensor_messages = messages_result.scalars().all()
+
+            # Construct SensorMessageRead objects manually to avoid lazy loading
+            sensor_message_reads = []
+            for msg in sensor_messages:
+                sensor_message_reads.append(SensorMessageRead(
+                    id=msg.id,
+                    gateway_id=msg.gateway_id,
+                    rssi=msg.rssi,
+                    snr=msg.snr,
+                    channel_rssi=msg.channel_rssi,
+                    lora_bandwidth=msg.lora_bandwidth,
+                    lora_spreading_factor=msg.lora_spreading_factor,
+                    lora_coding_rate=msg.lora_coding_rate,
+                    device_id=msg.device_id,
+                    sensor_metric_id=msg.sensor_metric_id,
+                    tags=[]  # TODO: Load tags properly in future iteration
+                ))
+
+            metric_read = SensorMetricRead(
+                id=metric.id,
+                timestamp_device=metric.timestamp_device,
+                timestamp_server=metric.timestamp_server,
+                temperature=metric.temperature,
+                humidity=metric.humidity,
+                air_pressure=metric.air_pressure,
+                battery_voltage=metric.battery_voltage,
+                device_id=metric.device_id,
+                confirmed=metric.confirmed,
+                consumed_airtime=metric.consumed_airtime,
+                f_cnt=metric.f_cnt,
+                frequency=metric.frequency,
+                tags=[],  # TODO: Load tags properly in future iteration
+                sensor_messages=sensor_message_reads
+            )
+            metrics_with_messages.append(metric_read)
+
         # Return consistent structure even without pagination
         return PaginatedMetricsResponse(
-            data=metrics,
+            data=metrics_with_messages,
             pagination={
                 "total_count": total_count,
                 "page": 1,
-                "limit": len(metrics),
+                "limit": len(metrics_with_messages),
                 "total_pages": 1,
                 "has_next": False,
                 "has_prev": False
@@ -176,7 +229,7 @@ async def get_metrics(
 async def create_metric(
     metric_data: CreateMetricRequest,
     session: AsyncSession = Depends(get_session),
-    current_user=Depends(require_auth)
+    current_user=Depends(require_auth)  # Authentication required
 ):
     """Create a new sensor metric by device name with optional multiple sensor message data"""
 
@@ -235,6 +288,23 @@ async def create_metric(
             await session.refresh(message)
 
         # Return response in SensorMetricRead format
+        # Construct SensorMessageRead objects manually to avoid lazy loading
+        sensor_message_reads = []
+        for msg in created_messages:
+            sensor_message_reads.append(SensorMessageRead(
+                id=msg.id,
+                gateway_id=msg.gateway_id,
+                rssi=msg.rssi,
+                snr=msg.snr,
+                channel_rssi=msg.channel_rssi,
+                lora_bandwidth=msg.lora_bandwidth,
+                lora_spreading_factor=msg.lora_spreading_factor,
+                lora_coding_rate=msg.lora_coding_rate,
+                device_id=msg.device_id,
+                sensor_metric_id=msg.sensor_metric_id,
+                tags=[]  # TODO: Load tags properly in future iteration
+            ))
+
         response = SensorMetricRead(
             id=new_metric.id,
             timestamp_device=new_metric.timestamp_device,
@@ -249,19 +319,7 @@ async def create_metric(
             f_cnt=new_metric.f_cnt,
             frequency=new_metric.frequency,
             tags=[],  # TODO: Load tags properly in future iteration
-            sensor_messages=[{
-                "id": msg.id,
-                "gateway_id": msg.gateway_id,
-                "rssi": msg.rssi,
-                "snr": msg.snr,
-                "channel_rssi": msg.channel_rssi,
-                "lora_bandwidth": msg.lora_bandwidth,
-                "lora_spreading_factor": msg.lora_spreading_factor,
-                "lora_coding_rate": msg.lora_coding_rate,
-                "device_id": msg.device_id,
-                "sensor_metric_id": msg.sensor_metric_id,
-                "tags": []  # TODO: Load tags properly in future iteration
-            } for msg in created_messages]
+            sensor_messages=sensor_message_reads
         )
 
         return response
