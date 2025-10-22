@@ -41,6 +41,13 @@ class UserTagLink(SQLModel, table=True):
         default=None, foreign_key="tag.id", primary_key=True)
 
 
+class SensorMessageTagLink(SQLModel, table=True):
+    sensor_message_id: Optional[int] = Field(
+        default=None, foreign_key="sensormessage.id", primary_key=True)
+    tag_id: Optional[int] = Field(
+        default=None, foreign_key="tag.id", primary_key=True)
+
+
 class Tag(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     category: str
@@ -50,6 +57,8 @@ class Tag(SQLModel, table=True):
     # Relationships
     sensor_metrics: List["SensorMetric"] = Relationship(
         back_populates="tags", link_model=SensorMetricTagLink)
+    sensor_messages: List["SensorMessage"] = Relationship(
+        back_populates="tags", link_model=SensorMessageTagLink)
     hardware_revisions: List["HardwareRevision"] = Relationship(
         back_populates="tags", link_model=HardwareRevisionTagLink)
     software_versions: List["SoftwareVersion"] = Relationship(
@@ -87,10 +96,39 @@ class SensorMetric(SQLModel, table=True):
     battery_voltage: Optional[float] = None
     device_id: Optional[int] = Field(
         default=None, foreign_key="device.device_id")
+    confirmed: Optional[bool] = None
+    consumed_airtime: Optional[float] = None
+    f_cnt: Optional[int] = None
+    frequency: Optional[int] = None
 
     device: Optional["Device"] = Relationship(back_populates="sensor_metrics")
+    sensor_messages: List["SensorMessage"] = Relationship(
+        back_populates="sensor_metric")
     tags: List[Tag] = Relationship(
         back_populates="sensor_metrics", link_model=SensorMetricTagLink)
+
+
+class SensorMessage(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    gateway_id: Optional[str] = None
+    rssi: Optional[float] = None
+    snr: Optional[float] = None
+    channel_rssi: Optional[float] = None
+    lora_bandwidth: Optional[int] = None
+    lora_spreading_factor: Optional[int] = None
+    lora_coding_rate: Optional[str] = None
+
+    device_id: Optional[int] = Field(
+        default=None, foreign_key="device.device_id")
+    sensor_metric_id: Optional[int] = Field(
+        default=None, foreign_key="sensormetric.id")
+
+    # Relationships
+    device: Optional["Device"] = Relationship(back_populates="sensor_messages")
+    sensor_metric: Optional["SensorMetric"] = Relationship(
+        back_populates="sensor_messages")
+    tags: List[Tag] = Relationship(
+        back_populates="sensor_messages", link_model=SensorMessageTagLink)
 
 
 class HardwareRevision(SQLModel, table=True):
@@ -137,6 +175,8 @@ class Device(SQLModel, table=True):
     shading_of_surrounding_area: Optional[int] = None
 
     sensor_metrics: List["SensorMetric"] = Relationship(
+        back_populates="device")
+    sensor_messages: List["SensorMessage"] = Relationship(
         back_populates="device")
     tags: List[Tag] = Relationship(
         back_populates="devices", link_model=DeviceTagLink)
