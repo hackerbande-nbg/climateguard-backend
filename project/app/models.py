@@ -131,28 +131,6 @@ class SensorMessage(SQLModel, table=True):
         back_populates="sensor_messages", link_model=SensorMessageTagLink)
 
 
-class HardwareRevision(SQLModel, table=True):
-    hardware_id: Optional[int] = Field(default=None, primary_key=True)
-    version_name: Optional[str] = None
-    specification_repo: Optional[str] = None
-    specification_commit: Optional[str] = None
-    specification_file_path: Optional[str] = None
-    comment: Optional[str] = None
-
-    tags: List[Tag] = Relationship(
-        back_populates="hardware_revisions", link_model=HardwareRevisionTagLink)
-
-
-class SoftwareVersion(SQLModel, table=True):
-    software_id: Optional[int] = Field(default=None, primary_key=True)
-    version_name: Optional[str] = None
-    git_commit: Optional[str] = None
-    comment: Optional[str] = None
-
-    tags: List[Tag] = Relationship(
-        back_populates="software_versions", link_model=SoftwareVersionTagLink)
-
-
 class Device(SQLModel, table=True):
     device_id: Optional[int] = Field(default=None, primary_key=True)
     name: Optional[str] = Field(default=None, unique=True)
@@ -181,3 +159,88 @@ class Device(SQLModel, table=True):
     tags: List[Tag] = Relationship(
         back_populates="devices", link_model=DeviceTagLink)
     comment: Optional[str] = None
+
+
+###############################################
+# SQL Only Models Below
+###############################################
+
+class HardwareRevision(SQLModel, table=True):
+    hardware_id: Optional[int] = Field(default=None, primary_key=True)
+    version_name: Optional[str] = None
+    specification_repo: Optional[str] = None
+    specification_commit: Optional[str] = None
+    specification_file_path: Optional[str] = None
+    comment: Optional[str] = None
+
+    tags: List[Tag] = Relationship(
+        back_populates="hardware_revisions", link_model=HardwareRevisionTagLink)
+
+
+class SoftwareVersion(SQLModel, table=True):
+    software_id: Optional[int] = Field(default=None, primary_key=True)
+    version_name: Optional[str] = None
+    git_commit: Optional[str] = None
+    comment: Optional[str] = None
+
+    tags: List[Tag] = Relationship(
+        back_populates="software_versions", link_model=SoftwareVersionTagLink)
+
+
+class DbMetrics(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    snapshot_timestamp: datetime
+    db_name: str = Field(default="current_database()")
+    db_size_bytes: int
+    active_connections: int
+    xact_commit: int
+    xact_rollback: int
+    blks_read: int
+    blks_hit: int
+    temp_files: int
+    temp_bytes: int
+    deadlocks: int
+
+
+class TableStorageMetrics(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    snapshot_timestamp: datetime
+    schemaname: str
+    tablename: str
+    relid: Optional[int] = None
+    total_bytes: int
+    table_bytes: int
+    index_bytes: int
+    toast_bytes: int
+
+
+class TableActivityMetrics(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    snapshot_timestamp: datetime
+    schemaname: str
+    tablename: str
+    relid: Optional[int] = None
+    seq_scan: int
+    idx_scan: int
+    n_tup_ins: int
+    n_tup_upd: int
+    n_tup_del: int
+    n_tup_hot_upd: int
+    n_dead_tup: int
+    last_vacuum: Optional[datetime] = None
+    last_autovacuum: Optional[datetime] = None
+    last_analyze: Optional[datetime] = None
+    last_autoanalyze: Optional[datetime] = None
+
+
+class IndexActivityMetrics(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    snapshot_timestamp: datetime
+    schemaname: str
+    tablename: str
+    indexname: str
+    indexrelid: Optional[int] = None
+    relid: Optional[int] = None
+    idx_scan: int
+    idx_tup_read: int
+    idx_tup_fetch: int
