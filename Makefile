@@ -1,4 +1,4 @@
-.PHONY: test debug deploy help print-checkmarks db-migrate-generate db-migrate-copy db-migrate-apply
+.PHONY: test debug deploy help print-checkmarks db-migrate-generate db-migrate-copy db-migrate-apply db-mig-down
 
 # Default target
 help:
@@ -9,6 +9,7 @@ help:
 	@echo "  db-migrate-generate - Generate new Alembic migration (use MSG='description')"
 	@echo "  db-migrate-copy    - Copy migration files from container to local filesystem"
 	@echo "  db-migrate-apply   - Apply database migrations using Alembic"
+	@echo "  db-mig-down        - Downgrade to specified revision: make db-mig-down <revision_id>"
 	@echo "  help               - Show this help message"
 
 print-checkmarks:
@@ -142,3 +143,19 @@ db-mig-apply:
 	@echo "📦 Applying database migrations via alembic..."
 	@docker exec quantum_web_dev alembic upgrade head
 	@echo "✅ Database migrations applied successfully"
+
+db-mig-down:
+	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo "❌ Please provide a revision ID: make db-mig-down <revision_id>"; \
+		echo "💡 Use 'base' to downgrade to initial state"; \
+		echo "💡 Use '-1' to downgrade by one revision"; \
+		echo "💡 Use specific revision ID to downgrade to that revision"; \
+		exit 1; \
+	fi
+	@echo "📉 Downgrading database to revision: $(filter-out $@,$(MAKECMDGOALS))"
+	@docker exec quantum_web_dev alembic downgrade $(filter-out $@,$(MAKECMDGOALS))
+	@echo "✅ Database downgraded successfully to revision: $(filter-out $@,$(MAKECMDGOALS))"
+
+# Catch-all target to handle revision arguments
+%:
+	@:
