@@ -6,10 +6,10 @@ on:
     - cron: '0 2 * * *'  # Run daily at 2 AM UTC
 
 jobs:
-  collect-metrics:
+  build:
     runs-on: quantum_server
     concurrency:
-      group: collect_db_metrics
+      group: run_prod
       cancel-in-progress: true
 
     steps:
