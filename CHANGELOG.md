@@ -1,3 +1,8 @@
+# 2.7.0
+
+- add messages to metrics endpoint, multiple per metric possible
+- add confirmed, consumed_airtime, f_cnt, frequency to metrics
+
 # 2.6.0
 
 - add software revision comment field
