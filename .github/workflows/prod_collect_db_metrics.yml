@@ -1,0 +1,58 @@
+name: collect database metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+
+jobs:
+  collect-metrics:
+    runs-on: quantum_server
+    concurrency:
+      group: collect_db_metrics
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Write .env file
+        run: echo "${{ secrets.QUANTUM_ENV_PROD }}" > .env
+
+      - name: Load environment variables
+        run: |
+          export $(cat .env | xargs)
+          echo "POSTGRES_USER=$POSTGRES_USER" >> $GITHUB_ENV
+          echo "POSTGRES_PW=$POSTGRES_PW" >> $GITHUB_ENV
+          echo "POSTGRES_DB=$POSTGRES_DB" >> $GITHUB_ENV
+          echo "POSTGRES_DNS=$POSTGRES_DNS" >> $GITHUB_ENV
+          echo "DB_PORT=$DB_PORT" >> $GITHUB_ENV
+
+      - name: Collect DB Metrics
+        run: |
+          export PGPASSWORD=${{ env.POSTGRES_PW }}
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f devops/sqls/dbmetrics.sql
+
+      - name: Collect Table Storage Metrics
+        run: |
+          export PGPASSWORD=${{ env.POSTGRES_PW }}
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f devops/sqls/tablestoragemetrics.sql
+
+      - name: Collect Table Activity Metrics
+        run: |
+          export PGPASSWORD=${{ env.POSTGRES_PW }}
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f devops/sqls/tableactivitymetrics.sql
+
+      - name: Collect Index Activity Metrics
+        run: |
+          export PGPASSWORD=${{ env.POSTGRES_PW }}
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f devops/sqls/indexactivitymetrics.sql
+
+      - name: Verify metrics collection
+        run: |
+          export PGPASSWORD=${{ env.POSTGRES_PW }}
+          echo "Latest metrics snapshot:"
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT COUNT(*) as db_metrics_count FROM dbmetrics WHERE snapshot_timestamp > now() - interval '1 hour';"
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT COUNT(*) as table_storage_count FROM tablestoragemetrics WHERE snapshot_timestamp > now() - interval '1 hour';"
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT COUNT(*) as table_activity_count FROM tableactivitymetrics WHERE snapshot_timestamp > now() - interval '1 hour';"
+          psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT COUNT(*) as index_activity_count FROM indexactivitymetrics WHERE snapshot_timestamp > now() - interval '1 hour';"
