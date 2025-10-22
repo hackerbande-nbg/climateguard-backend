@@ -116,3 +116,84 @@ class DeviceUpdate(SQLModel):
     distance_to_next_building_cm: Optional[int] = Field(None, ge=0)
     tags: Optional[List[str]] = None
     comment: Optional[str] = None
+
+
+# Sensor Message Schemas
+class SensorMessageCreate(SQLModel):
+    """Schema for creating sensor messages"""
+    gateway_id: Optional[str] = None
+    rssi: Optional[float] = None
+    snr: Optional[float] = None
+    channel_rssi: Optional[float] = None
+    lora_bandwidth: Optional[int] = Field(None, ge=0)
+    lora_spreading_factor: Optional[int] = Field(None, ge=7, le=12)
+    lora_coding_rate: Optional[str] = None
+    device_id: Optional[int] = None
+    sensor_metric_id: Optional[int] = None
+    tags: List[str] = []
+
+
+class SensorMessageRead(SQLModel):
+    """Schema for reading sensor messages"""
+    id: int
+    gateway_id: Optional[str] = None
+    rssi: Optional[float] = None
+    snr: Optional[float] = None
+    channel_rssi: Optional[float] = None
+    lora_bandwidth: Optional[int] = None
+    lora_spreading_factor: Optional[int] = None
+    lora_coding_rate: Optional[str] = None
+    device_id: Optional[int] = None
+    sensor_metric_id: Optional[int] = None
+    tags: List[TagRead] = []
+
+
+class SensorMessageUpdate(SQLModel):
+    """Schema for updating sensor messages"""
+    gateway_id: Optional[str] = None
+    rssi: Optional[float] = None
+    snr: Optional[float] = None
+    channel_rssi: Optional[float] = None
+    lora_bandwidth: Optional[int] = Field(None, ge=0)
+    lora_spreading_factor: Optional[int] = Field(None, ge=7, le=12)
+    lora_coding_rate: Optional[str] = None
+    device_id: Optional[int] = None
+    sensor_metric_id: Optional[int] = None
+    tags: Optional[List[str]] = None
+
+
+# Metric Schemas
+class CreateMetricRequest(SQLModel):
+    """Request model for creating a new metric with optional sensor message data"""
+    device_name: str
+    timestamp_device: Optional[int] = None
+    timestamp_server: Optional[int] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    air_pressure: Optional[float] = None
+    battery_voltage: Optional[float] = None
+    # New SensorMetric fields
+    confirmed: Optional[bool] = None
+    consumed_airtime: Optional[float] = Field(None, ge=0)
+    f_cnt: Optional[int] = Field(None, ge=0)
+    frequency: Optional[int] = Field(None, ge=0)
+    # Optional multiple sensor messages
+    sensor_messages: Optional[List[SensorMessageCreate]] = None
+
+
+class SensorMetricRead(SQLModel):
+    """Schema for reading sensor metrics with nested sensor messages"""
+    id: int
+    timestamp_device: Optional[int] = None
+    timestamp_server: Optional[int] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    air_pressure: Optional[float] = None
+    battery_voltage: Optional[float] = None
+    device_id: Optional[int] = None
+    confirmed: Optional[bool] = None
+    consumed_airtime: Optional[float] = None
+    f_cnt: Optional[int] = None
+    frequency: Optional[int] = None
+    tags: List[TagRead] = []
+    sensor_messages: List[SensorMessageRead] = []
