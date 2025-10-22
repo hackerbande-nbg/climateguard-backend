@@ -25,12 +25,13 @@ jobs:
           echo "POSTGRES_USER=$POSTGRES_USER" >> $GITHUB_ENV
           echo "POSTGRES_PW=$POSTGRES_PW" >> $GITHUB_ENV
           echo "POSTGRES_DB=$POSTGRES_DB" >> $GITHUB_ENV
-          echo "POSTGRES_DNS=$POSTGRES_DNS" >> $GITHUB_ENV
+          echo "POSTGRES_DNS=localhost" >> $GITHUB_ENV
           echo "DB_PORT=$DB_PORT" >> $GITHUB_ENV
 
       - name: Collect DB Metrics
         run: |
           export PGPASSWORD=${{ env.POSTGRES_PW }}
+          echo ${{ env.POSTGRES_DNS }}
           psql -h ${{ env.POSTGRES_DNS }} -p ${{ env.DB_PORT }} -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -f devops/sqls/dbmetrics.sql
 
       - name: Collect Table Storage Metrics
