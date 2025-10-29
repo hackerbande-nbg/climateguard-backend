@@ -140,7 +140,7 @@ def test_get_metrics_pagination_invalid_page(base_url):
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
-def test_create_metric_with_auth(base_url):
+def test_create_metric_with_auth(base_url, ensure_test_device):
     """Test creating a metric with authentication"""
     metric_data = {
         "device_name": "test_device",
@@ -156,15 +156,13 @@ def test_create_metric_with_auth(base_url):
         f"{base_url}/metrics", json=metric_data, headers=get_auth_headers_for_test())
     debug_response_if_not_2xx(response)
 
-    if response.status_code == 404:
-        # Device not found is expected in test environment
-        assert "not found" in response.json().get("detail", "").lower()
-    else:
-        assert response.status_code == 201
+    # With fixture ensuring device exists, we should get 201 (or 200 depending on API)
+    assert response.status_code in [
+        200, 201], f"Expected successful creation, got {response.status_code}"
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
-def test_create_metric_unauthorized(base_url):
+def test_create_metric_unauthorized(base_url, ensure_test_device):
     """Test creating a metric without authentication should fail"""
     metric_data = {
         "device_name": "test_device",

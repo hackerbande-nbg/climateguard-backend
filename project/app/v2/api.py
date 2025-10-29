@@ -7,7 +7,7 @@ from app.v2.routers import auth as v2_auth
 app = FastAPI(
     title="climateguard-backend v2",
     description="4/5 production of climateguard backend",
-    version="2.7.0",
+    version="3.0.0",
     openapi_url="/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc"

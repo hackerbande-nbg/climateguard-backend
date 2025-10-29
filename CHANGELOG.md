@@ -1,3 +1,7 @@
+# 3.0.0
+
+- simplified api response for performance
+
 # 2.7.0
 
 - add messages to metrics endpoint, multiple per metric possible
