@@ -184,7 +184,6 @@ def test_create_metric_backward_compatibility(base_url):
         assert "not found" in response.json().get("detail", "").lower()
     else:
         assert response.status_code == 200
-        data = response.json()
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
