@@ -197,3 +197,15 @@ class SensorMetricRead(SQLModel):
     frequency: Optional[int] = None
     tags: List[TagRead] = []
     sensor_messages: List[SensorMessageRead] = []
+
+
+class SensorMetricSimple(SQLModel):
+    """Simplified schema for public metrics endpoint - returns only essential fields"""
+    id: int
+    timestamp_device: Optional[int] = None
+    timestamp_server: Optional[int] = None
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    air_pressure: Optional[float] = None
+    battery_voltage: Optional[float] = None
+    device_id: Optional[int] = None
