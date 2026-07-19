@@ -75,9 +75,11 @@ def test_get_metrics_filters_multiple_device_ids_and_scopes_pagination(base_url)
 
     response = http_client.get(
         f"{base_url}/metrics",
-        params=[("device_id", device_id) for device_id in selected_ids] +
-        [("device_id", selected_ids[0])] +
-        [("limit", 1), ("page", 1)]
+        params={
+            "device_ids": f"{selected_ids[0]}, {selected_ids[1]},{selected_ids[0]}",
+            "limit": 1,
+            "page": 1,
+        }
     )
     debug_response_if_not_2xx(response)
 
@@ -90,8 +92,10 @@ def test_get_metrics_filters_multiple_device_ids_and_scopes_pagination(base_url)
 
     date_response = http_client.get(
         f"{base_url}/metrics",
-        params=[("device_id", device_id) for device_id in selected_ids] +
-        [("min_date", 2000000001)]
+        params={
+            "device_ids": ",".join(str(device_id) for device_id in selected_ids),
+            "min_date": 2000000001,
+        }
     )
     assert date_response.status_code == 200
     date_payload = date_response.json()
@@ -121,7 +125,7 @@ def test_get_metrics_filters_by_complete_device_tag(base_url):
 @pytest.mark.parametrize("params", [
     {"tag_category": "device"},
     {"tag_name": "outdoor"},
-    {"device_id": 1, "tag_category": "device", "tag_name": "outdoor"},
+    {"device_ids": "1", "tag_category": "device", "tag_name": "outdoor"},
 ])
 def test_get_metrics_rejects_incomplete_or_mixed_device_filters(base_url, params):
     response = http_client.get(f"{base_url}/metrics", params=params)
@@ -132,7 +136,7 @@ def test_get_metrics_rejects_incomplete_or_mixed_device_filters(base_url, params
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)
 @pytest.mark.parametrize("params", [
-    [("device_id", 999999), ("device_id", 999998)],
+    {"device_ids": "999999,999998"},
     {"tag_category": "device", "tag_name": "tag-that-does-not-exist"},
 ])
 def test_get_metrics_returns_empty_pagination_for_unmatched_filter(base_url, params):
@@ -144,6 +148,41 @@ def test_get_metrics_returns_empty_pagination_for_unmatched_filter(base_url, par
     assert payload["pagination"]["total_count"] == 0
     assert payload["pagination"]["total_pages"] == 1
     assert payload["pagination"]["has_next"] is False
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+@pytest.mark.parametrize("device_ids", [
+    "",
+    "1,",
+    ",1",
+    "1,,2",
+    "one,2",
+    "²,2",
+    "0,2",
+    "-1,2",
+    "1000001",
+    "999999999999999999999999999999999999999999999999999999999999",
+])
+def test_get_metrics_rejects_invalid_device_ids(base_url, device_ids):
+    response = http_client.get(
+        f"{base_url}/metrics", params={"device_ids": device_ids})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == (
+        "device_ids must be a comma-separated list of integers "
+        "between 1 and 1000000")
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_metrics_openapi_exposes_only_comma_separated_device_ids(base_url):
+    response = http_client.get(f"{base_url}/openapi.json")
+    debug_response_if_not_2xx(response)
+
+    assert response.status_code == 200
+    parameters = response.json()["paths"]["/metrics"]["get"]["parameters"]
+    parameter_names = {parameter["name"] for parameter in parameters}
+    assert "device_ids" in parameter_names
+    assert "device_id" not in parameter_names
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)

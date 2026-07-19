@@ -100,10 +100,17 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=2021-03-31T00:00:00Z&max_
 ```
 
 #### With one or more device IDs
-Repeat `device_id` to request multiple devices.
+Supply device IDs from 1 through 1,000,000 as a comma-separated `device_ids`
+value.
 
 ```bash
-curl -X GET "http://localhost:8001/v2/metrics?device_id=12&device_id=34"
+curl -X GET "http://localhost:8001/v2/metrics?device_ids=12,34"
+```
+
+Device IDs can be combined with date filters and pagination:
+
+```bash
+curl -X GET "http://localhost:8001/v2/metrics?device_ids=2,18,27&min_date=2026-07-17T22:00:00.000Z&max_date=2026-07-18T22:00:00.000Z&limit=100&page=1"
 ```
 
 #### With a device tag
@@ -129,7 +136,7 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=16172
 ```
 
 **Query Parameters:**
-- `device_id` (optional, repeatable): Filter by one or more device IDs
+- `device_ids` (optional): Comma-separated device IDs from 1 through 1,000,000
 - `tag_category` and `tag_name` (optional pair): Filter by an exact device tag
 - `min_date` (optional): Minimum date filter (Unix timestamp or ISO string)
 - `max_date` (optional): Maximum date filter (Unix timestamp or ISO string)

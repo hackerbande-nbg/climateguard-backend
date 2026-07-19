@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, func
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from pydantic import BaseModel
 import re
 
@@ -46,10 +46,40 @@ def parse_date_parameter(date_str: str) -> int:
         status_code=400, detail=f"Invalid date format: {date_str}")
 
 
+def parse_device_ids_parameter(device_ids: str) -> list[int]:
+    """Parse comma-separated device IDs using the public device ID bounds."""
+    invalid_detail = (
+        "device_ids must be a comma-separated list of integers "
+        "between 1 and 1000000"
+    )
+    values = [value.strip() for value in device_ids.split(",")]
+    if not values or any(
+        not value or re.fullmatch(r"[0-9]+", value) is None
+        for value in values
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail=invalid_detail
+        )
+
+    try:
+        parsed_ids = [int(value) for value in values]
+    except (TypeError, ValueError, OverflowError):
+        raise HTTPException(status_code=422, detail=invalid_detail)
+
+    if any(not 1 <= device_id <= 1000000 for device_id in parsed_ids):
+        raise HTTPException(
+            status_code=422,
+            detail=invalid_detail
+        )
+
+    return list(dict.fromkeys(parsed_ids))
+
+
 @router.get("/metrics")
 async def get_metrics(
-    device_id: Optional[List[int]] = Query(
-        None, description="Filter by one or more device IDs (repeat parameter)"),
+    device_ids: Optional[str] = Query(
+        None, description="Filter by comma-separated device IDs"),
     tag_category: Optional[str] = Query(
         None, description="Filter by device tag category"),
     tag_name: Optional[str] = Query(
@@ -72,20 +102,27 @@ async def get_metrics(
             status_code=422,
             detail="tag_category and tag_name must be provided together"
         )
-    if device_id and has_tag_filter:
+    if device_ids is not None and has_tag_filter:
         raise HTTPException(
             status_code=422,
-            detail="device_id cannot be combined with tag filters"
+            detail="device_ids cannot be combined with tag filters"
         )
+
+    parsed_device_ids = (
+        parse_device_ids_parameter(device_ids)
+        if device_ids is not None else None
+    )
 
     # Build the base query for counting
     count_query = select(func.count(SensorMetric.id))
     data_query = select(SensorMetric).order_by(
         SensorMetric.timestamp_server.desc())
 
-    if device_id:
-        count_query = count_query.where(SensorMetric.device_id.in_(device_id))
-        data_query = data_query.where(SensorMetric.device_id.in_(device_id))
+    if parsed_device_ids:
+        count_query = count_query.where(
+            SensorMetric.device_id.in_(parsed_device_ids))
+        data_query = data_query.where(
+            SensorMetric.device_id.in_(parsed_device_ids))
 
     if tag_category and tag_name:
         tagged_devices = select(DeviceTagLink.device_id).join(Tag).where(

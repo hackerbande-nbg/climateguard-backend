@@ -25,12 +25,12 @@
 # 2.3.0
 
 - add air_pressure field
-- [docs/changes/air_pressure.md](docs/changes/air_pressure.md)
+- [docs/changes/25-07-24-air-pressure.md](docs/changes/25-07-24-air-pressure.md)
 
 # 2.2.0
 
 - add auth
-- [docs/changes/auth.md](docs/changes/auth.md)
+- [docs/changes/25-07-12-auth.md](docs/changes/25-07-12-auth.md)
 
 # 2.1.0
 
