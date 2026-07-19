@@ -1,5 +1,6 @@
 import json
 import pytest
+from uuid import uuid4
 from test.utils.http_client import HttpClient
 from test.utils.auth_helpers import get_auth_headers, TEST_USER
 
@@ -27,6 +28,122 @@ def debug_response_if_not_2xx(response):
 def get_auth_headers_for_test():
     """Get authentication headers for test requests"""
     return get_auth_headers(TEST_USER['X-API-Key'])
+
+
+def create_metric_filter_fixture(base_url):
+    """Create isolated devices and metrics through the public API."""
+    suffix = uuid4().hex
+    tag_name = f"metrics-filter-{suffix}"
+    devices = []
+
+    for index in range(3):
+        response = http_client.post(
+            f"{base_url}/devices",
+            json={
+                "name": f"metrics-filter-device-{index}-{suffix}",
+                "latitude": 49.0,
+                "longitude": 8.0,
+                "tags": [tag_name] if index < 2 else []
+            },
+            headers=get_auth_headers_for_test()
+        )
+        debug_response_if_not_2xx(response)
+        assert response.status_code == 201
+        devices.append(response.json())
+
+    for device, metric_count in zip(devices, (2, 1, 1)):
+        for metric_index in range(metric_count):
+            response = http_client.post(
+                f"{base_url}/metrics",
+                json={
+                    "device_name": device["name"],
+                    "timestamp_server": 2000000000 + metric_index,
+                    "temperature": 20.0 + metric_index
+                },
+                headers=get_auth_headers_for_test()
+            )
+            debug_response_if_not_2xx(response)
+            assert response.status_code == 200
+
+    return devices, tag_name
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_get_metrics_filters_multiple_device_ids_and_scopes_pagination(base_url):
+    devices, _ = create_metric_filter_fixture(base_url)
+    selected_ids = [devices[0]["device_id"], devices[1]["device_id"]]
+
+    response = http_client.get(
+        f"{base_url}/metrics",
+        params=[("device_id", device_id) for device_id in selected_ids] +
+        [("device_id", selected_ids[0])] +
+        [("limit", 1), ("page", 1)]
+    )
+    debug_response_if_not_2xx(response)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["pagination"]["total_count"] == 3
+    assert payload["pagination"]["total_pages"] == 3
+    assert len(payload["data"]) == 1
+    assert {metric["device_id"] for metric in payload["data"]} <= set(selected_ids)
+
+    date_response = http_client.get(
+        f"{base_url}/metrics",
+        params=[("device_id", device_id) for device_id in selected_ids] +
+        [("min_date", 2000000001)]
+    )
+    assert date_response.status_code == 200
+    date_payload = date_response.json()
+    assert date_payload["pagination"]["total_count"] == 1
+    assert {metric["device_id"] for metric in date_payload["data"]} == {
+        selected_ids[0]}
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+def test_get_metrics_filters_by_complete_device_tag(base_url):
+    devices, tag_name = create_metric_filter_fixture(base_url)
+    tagged_ids = {devices[0]["device_id"], devices[1]["device_id"]}
+
+    response = http_client.get(
+        f"{base_url}/metrics",
+        params={"tag_category": "device", "tag_name": tag_name}
+    )
+    debug_response_if_not_2xx(response)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["pagination"]["total_count"] == 3
+    assert {metric["device_id"] for metric in payload["data"]} == tagged_ids
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+@pytest.mark.parametrize("params", [
+    {"tag_category": "device"},
+    {"tag_name": "outdoor"},
+    {"device_id": 1, "tag_category": "device", "tag_name": "outdoor"},
+])
+def test_get_metrics_rejects_incomplete_or_mixed_device_filters(base_url, params):
+    response = http_client.get(f"{base_url}/metrics", params=params)
+
+    assert response.status_code == 422
+    assert "detail" in response.json()
+
+
+@pytest.mark.parametrize("base_url", BASE_URLS_V2)
+@pytest.mark.parametrize("params", [
+    [("device_id", 999999), ("device_id", 999998)],
+    {"tag_category": "device", "tag_name": "tag-that-does-not-exist"},
+])
+def test_get_metrics_returns_empty_pagination_for_unmatched_filter(base_url, params):
+    response = http_client.get(f"{base_url}/metrics", params=params)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["data"] == []
+    assert payload["pagination"]["total_count"] == 0
+    assert payload["pagination"]["total_pages"] == 1
+    assert payload["pagination"]["has_next"] is False
 
 
 @pytest.mark.parametrize("base_url", BASE_URLS_V2)

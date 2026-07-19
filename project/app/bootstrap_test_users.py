@@ -42,13 +42,14 @@ TEST_USER_CONFIG = {
 async def get_database_connection():
     """Create database connection from environment variables"""
 
-    # Read database configuration from .env
+    # Compose passes discrete values so reserved URL characters in credentials
+    # are never interpreted as URL delimiters.
     db_config = {
         'user': os.getenv('POSTGRES_USER'),
         'password': os.getenv('POSTGRES_PW'),
         'database': os.getenv('POSTGRES_DB'),
-        'host': 'localhost',
-        'port': int(os.getenv('DB_PORT'))
+        'host': os.getenv('DB_HOST', 'localhost'),
+        'port': int(os.getenv('DB_PORT', '5432'))
     }
 
     print(

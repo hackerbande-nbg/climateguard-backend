@@ -1,5 +1,6 @@
 alembic
 asyncpg
 fastapi
+python-dotenv
 sqlmodel
 uvicorn

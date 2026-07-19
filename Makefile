@@ -92,7 +92,7 @@ _run-migrations:
 
 _bootstrap-users:
 	@echo "📦 Bootstrap test users in DB..."
-	@python3 project/app/bootstrap_test_users.py || { \
+	@docker compose exec -T web python app/bootstrap_test_users.py || { \
 		echo "❌ Bootstrap script failed."; \
 		exit 1; \
 	}

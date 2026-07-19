@@ -76,7 +76,8 @@ curl -X POST "http://localhost:8001/v2/sensormetrics" \
 ## Metrics with Filtering
 
 ### GET /metrics
-Retrieve sensor metrics with optional date filtering and pagination.
+Retrieve sensor metrics with optional device or tag filtering, date filtering,
+and pagination.
 
 #### Basic usage (no filters)
 ```bash
@@ -98,6 +99,20 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=16172
 curl -X GET "http://localhost:8001/v2/metrics?min_date=2021-03-31T00:00:00Z&max_date=2021-04-01T00:00:00Z"
 ```
 
+#### With one or more device IDs
+Repeat `device_id` to request multiple devices.
+
+```bash
+curl -X GET "http://localhost:8001/v2/metrics?device_id=12&device_id=34"
+```
+
+#### With a device tag
+`tag_category` and `tag_name` must be supplied together.
+
+```bash
+curl -X GET "http://localhost:8001/v2/metrics?tag_category=device&tag_name=Annapark"
+```
+
 #### With pagination (when >200 total entries)
 ```bash
 curl -X GET "http://localhost:8001/v2/metrics?page=1&limit=50"
@@ -114,10 +129,15 @@ curl -X GET "http://localhost:8001/v2/metrics?min_date=1617184800&max_date=16172
 ```
 
 **Query Parameters:**
+- `device_id` (optional, repeatable): Filter by one or more device IDs
+- `tag_category` and `tag_name` (optional pair): Filter by an exact device tag
 - `min_date` (optional): Minimum date filter (Unix timestamp or ISO string)
 - `max_date` (optional): Maximum date filter (Unix timestamp or ISO string)
-- `limit` (optional): Number of records to return (default: 100, max: 1000)
+- `limit` (optional): Number of records to return (default: 100, max: 200)
 - `page` (optional): Page number for pagination (default: 1, starts from 1)
+
+Device IDs and tag filters are mutually exclusive. Incomplete tag pairs or a
+request that mixes both filter modes returns HTTP 422.
 
 **Response (when >200 total entries):**
 ```json

@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, func
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from pydantic import BaseModel
 import re
 
 from app.db import get_session
-from app.models import SensorMetric, SensorMessage, Device
+from app.models import SensorMetric, SensorMessage, Device, DeviceTagLink, Tag
 from app.schemas import CreateMetricRequest, SensorMetricRead, SensorMessageRead, SensorMetricSimple
 from app.dependencies import require_auth
 
@@ -48,6 +48,12 @@ def parse_date_parameter(date_str: str) -> int:
 
 @router.get("/metrics")
 async def get_metrics(
+    device_id: Optional[List[int]] = Query(
+        None, description="Filter by one or more device IDs (repeat parameter)"),
+    tag_category: Optional[str] = Query(
+        None, description="Filter by device tag category"),
+    tag_name: Optional[str] = Query(
+        None, description="Filter by device tag name"),
     min_date: Optional[str] = Query(
         None, description="Minimum date filter (Unix timestamp or ISO string)"),
     max_date: Optional[str] = Query(
@@ -60,10 +66,36 @@ async def get_metrics(
 ):
     """Get sensor metrics with optional date filtering and pagination - PUBLIC ENDPOINT"""
 
+    has_tag_filter = tag_category is not None or tag_name is not None
+    if has_tag_filter and not (tag_category and tag_name):
+        raise HTTPException(
+            status_code=422,
+            detail="tag_category and tag_name must be provided together"
+        )
+    if device_id and has_tag_filter:
+        raise HTTPException(
+            status_code=422,
+            detail="device_id cannot be combined with tag filters"
+        )
+
     # Build the base query for counting
     count_query = select(func.count(SensorMetric.id))
     data_query = select(SensorMetric).order_by(
         SensorMetric.timestamp_server.desc())
+
+    if device_id:
+        count_query = count_query.where(SensorMetric.device_id.in_(device_id))
+        data_query = data_query.where(SensorMetric.device_id.in_(device_id))
+
+    if tag_category and tag_name:
+        tagged_devices = select(DeviceTagLink.device_id).join(Tag).where(
+            Tag.category == tag_category,
+            Tag.tag == tag_name
+        )
+        count_query = count_query.where(
+            SensorMetric.device_id.in_(tagged_devices))
+        data_query = data_query.where(
+            SensorMetric.device_id.in_(tagged_devices))
 
     # Apply date filters if provided
     if min_date:
